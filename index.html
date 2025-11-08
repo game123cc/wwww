@@ -291,13 +291,23 @@ body {
 </div>
 
 <script>
+// ===== звук =====
 const video=document.getElementById('mainVideo');
 const soundBtn=document.getElementById('soundBtn');
 soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
 
+// ===== панели =====
 const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ"];
 const topPanels=document.getElementById('topPanels');
-const panels=[];
+
+const colorMap = {
+  "СОПРАНО": "#FF4DFF",
+  "ГОЛЯК": "#00E5FF",
+  "ИГРА ПРЕСТОЛОВ": "#FFD166",
+  "МОЛОКСОСЫ": "#7CFFB2",
+  "БЕССТЫЖИЕ": "#FF6B6B"
+};
+
 for(let i=1;i<=20;i++){
   const p=document.createElement('div');
   p.className='panel';
@@ -307,27 +317,65 @@ for(let i=1;i<=20;i++){
     t.className='panel-title';
     t.textContent=titles[i-1];
     p.appendChild(t);
+    p.dataset.title=titles[i-1];
+    p.dataset.color=colorMap[titles[i-1]]||'#fff';
+  }else{
+    p.dataset.title='';
+    p.dataset.color='';
   }
-  panels.push(p);
   topPanels.appendChild(p);
 }
+
+let panels=Array.from(document.querySelectorAll('.panel'));
 let currentIndex=0;
-let visibleCount = window.innerWidth <= 600 ? 3 : 5;
+
+// ===== добавлено: динамическое количество плашек =====
+let visibleCount=window.innerWidth<=600?3:5;
 window.addEventListener('resize',()=>{visibleCount=window.innerWidth<=600?3:5;updatePanels();});
-function updatePanels(){
-  panels.forEach(p=>p.style.display='none');
-  for(let i=0;i<visibleCount;i++){const idx=(currentIndex+i)%panels.length;panels[idx].style.display='block';}
-  const center=(currentIndex+Math.floor(visibleCount/2))%panels.length;
-  panels.forEach((p,i)=>p.classList.toggle('active',i===center));
+// ===================================================
+
+function clearPanelStyle(p){
+  p.style.boxShadow='';
+  const titleEl=p.querySelector('.panel-title');
+  if(titleEl){titleEl.style.color='';titleEl.style.textShadow='';}
 }
+
+function updatePanels(){
+  panels.forEach(p=>{p.style.display='none';clearPanelStyle(p);p.classList.remove('active');});
+  for(let i=0;i<visibleCount;i++){
+    const idx=(currentIndex+i+panels.length)%panels.length;
+    panels[idx].style.display='block';
+  }
+  const centerOffset=Math.floor(visibleCount/2);
+  const centerIndex=(currentIndex+centerOffset+panels.length)%panels.length;
+  panels.forEach((p,i)=>{
+    if(i===centerIndex){
+      p.classList.add('active');
+      const col=p.dataset.color;
+      if(col){
+        p.style.boxShadow=`0 0 30px ${col},0 0 60px ${col}33`;
+        const titleEl=p.querySelector('.panel-title');
+        if(titleEl){titleEl.style.color=col;titleEl.style.textShadow=`0 0 8px ${col},0 0 18px ${col}`;}
+      }else{p.style.boxShadow='0 0 25px rgba(255,140,0,0.8)';}
+    }
+  });
+}
+
 document.getElementById('prevBtn').onclick=()=>{currentIndex=(currentIndex-1+panels.length)%panels.length;updatePanels();};
 document.getElementById('nextBtn').onclick=()=>{currentIndex=(currentIndex+1)%panels.length;updatePanels();};
+topPanels.addEventListener('click',e=>{
+  const clicked=e.target.closest('.panel');if(!clicked)return;
+  const idx=panels.indexOf(clicked);if(idx===-1)return;
+  const centerOffset=Math.floor(visibleCount/2);
+  currentIndex=(idx-centerOffset+panels.length)%panels.length;updatePanels();
+});
 updatePanels();
 
+// ===== регистрация / вход =====
 function toggleEye(inputId,iconId){
   const input=document.getElementById(inputId);
   const icon=document.getElementById(iconId);
-  icon.addEventListener('click',()=>{input.type=input.type==='password'?'text':'password';});
+  icon.addEventListener('click',()=>{if(input.type==='password'){input.type='text';icon.style.backgroundImage="url('icons/eye-open.png')";}else{input.type='password';icon.style.backgroundImage="url('icons/eye-closed.png')";}});
 }
 toggleEye('login_password','login_eye');
 toggleEye('reg_password','reg_eye1');
@@ -348,62 +396,99 @@ const authModal=document.getElementById('authModal');
 const tabLogin=document.getElementById('tabLogin');
 const tabRegister=document.getElementById('tabRegister');
 const profilePanel=document.getElementById('profilePanel');
+const profileAvatar=document.getElementById('profileAvatar');
 const profileName=document.getElementById('profileName');
 const logoutBtn=document.getElementById('logoutBtn');
 
 function showModal(tab){
   authModal.classList.add('visible');
-  if(tab==='register'){tabRegister.classList.add('active');tabLogin.classList.remove('active');loginForm.style.display='none';regForm.style.display='block';}
-  else{tabLogin.classList.add('active');tabRegister.classList.remove('active');regForm.style.display='none';loginForm.style.display='block';}
+  if(tab==='login'){showLoginTab();}else{showRegisterTab();}
 }
-tabLogin.onclick=()=>showModal('login');
-tabRegister.onclick=()=>showModal('register');
-registerBtn.onclick=()=>showModal('login');
-document.addEventListener('click',e=>{if(authModal.classList.contains('visible')&&!authModal.contains(e.target)&&!registerBtn.contains(e.target)){authModal.classList.remove('visible');}});
 
-regForm.addEventListener('submit',e=>{
-  e.preventDefault();
-  const username=document.getElementById('reg_username').value.trim();
-  const pass=document.getElementById('reg_password').value;
-  const rep=document.getElementById('reg_repeat').value;
-  if(username.length<3){regError.textContent='Ник минимум 3 символа';regError.style.display='block';return;}
-  if(pass.length<6){regError.textContent='Пароль минимум 6 символов';regError.style.display='block';return;}
-  if(pass!==rep){regError.textContent='Пароли не совпадают';regError.style.display='block';return;}
-  const users=loadUsers();
-  if(users.find(u=>u.name.toLowerCase()===username.toLowerCase())){regError.textContent='Ник уже занят';regError.style.display='block';return;}
-  users.push({name:username,pass:pass,avatar:'img/default-avatar.png'});
-  saveUsers(users);
-  setCurrentUser({name:username,avatar:'img/default-avatar.png'});
-  location.reload();
+function hideModal(){authModal.classList.remove('visible');}
+
+function showLoginTab(){
+  tabLogin.classList.add('active');
+  tabRegister.classList.remove('active');
+  loginForm.style.display='block';
+  registerForm.style.display='none';
+}
+
+function showRegisterTab(){
+  tabRegister.classList.add('active');
+  tabLogin.classList.remove('active');
+  registerForm.style.display='block';
+  loginForm.style.display='none';
+}
+
+tabLogin.onclick=()=>showLoginTab();
+tabRegister.onclick=()=>showRegisterTab();
+
+registerBtn.onclick=()=>showModal('login');
+avatarBtn.onclick=()=>{
+  if(profilePanel.classList.contains('visible')) profilePanel.classList.remove('visible');
+  else profilePanel.classList.add('visible');
+};
+
+window.addEventListener('click',e=>{
+  if(!authModal.contains(e.target)&&!registerBtn.contains(e.target)&&authModal.classList.contains('visible')) hideModal();
+  if(!profilePanel.contains(e.target)&&!avatarBtn.contains(e.target)) profilePanel.classList.remove('visible');
 });
 
+// ===== регистрация =====
+regForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const users=loadUsers();
+  const username=document.getElementById('reg_username').value.trim();
+  const pass=document.getElementById('reg_password').value;
+  const repeat=document.getElementById('reg_repeat').value;
+  if(pass!==repeat){regError.textContent='Пароли не совпадают';regError.style.display='block';return;}
+  if(users.some(u=>u.username===username)){regError.textContent='Такой пользователь уже есть';regError.style.display='block';return;}
+  users.push({username,pass});
+  saveUsers(users);
+  regError.style.display='none';
+  showLoginTab();
+});
+
+// ===== вход =====
 loginForm.addEventListener('submit',e=>{
   e.preventDefault();
   const username=document.getElementById('login_username').value.trim();
   const pass=document.getElementById('login_password').value;
   const users=loadUsers();
-  const user=users.find(u=>u.name.toLowerCase()===username.toLowerCase()&&u.pass===pass);
-  if(!user){loginError.textContent='Неверный логин или пароль';loginError.style.display='block';return;}
-  setCurrentUser(user);
-  location.reload();
+  const found=users.find(u=>u.username===username&&u.pass===pass);
+  if(!found){loginError.textContent='Неверный логин или пароль';loginError.style.display='block';return;}
+  loginError.style.display='none';
+  setCurrentUser(found);
+  updateUserUI();
+  hideModal();
 });
 
-function updateProfile(){
+// ===== обновление UI =====
+function updateUserUI(){
   const user=getCurrentUser();
   if(user){
     registerBtn.style.display='none';
     avatarBtn.style.display='block';
-    avatarBtn.style.backgroundImage=`url('${user.avatar}')`;
-    profileName.textContent=user.name;
-  } else {
+    profileName.textContent=user.username;
+    profileAvatar.style.backgroundImage="url('img/default-avatar.png')";
+  }else{
     registerBtn.style.display='block';
     avatarBtn.style.display='none';
   }
 }
-updateProfile();
 
-avatarBtn.onclick=()=>profilePanel.classList.toggle('visible');
-logoutBtn.onclick=()=>{localStorage.removeItem('user');location.reload();};
+// ===== выход =====
+logoutBtn.onclick=()=>{
+  localStorage.removeItem('user');
+  updateUserUI();
+  profilePanel.classList.remove('visible');
+};
+
+// ===== при загрузке =====
+updateUserUI();
 </script>
+
 </body>
 </html>
+

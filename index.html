@@ -291,17 +291,14 @@ body {
 </div>
 
 <script>
-// ===== звук =====
 const video=document.getElementById('mainVideo');
 const soundBtn=document.getElementById('soundBtn');
 soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
 
-// ===== панели =====
 const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ"];
 const topPanels=document.getElementById('topPanels');
 const panels=[];
 
-// создаем панели
 for(let i=1;i<=20;i++){
   const p=document.createElement('div');
   p.className='panel';
@@ -317,7 +314,7 @@ for(let i=1;i<=20;i++){
 }
 
 let currentIndex=0;
-let visibleCount = window.innerWidth <= 600 ? 3 : 5; // 👈 вот добавление
+let visibleCount = window.innerWidth <= 600 ? 3 : 5;
 
 window.addEventListener('resize',()=>{ 
   visibleCount = window.innerWidth <= 600 ? 3 : 5;
@@ -338,7 +335,6 @@ document.getElementById('prevBtn').onclick=()=>{currentIndex=(currentIndex-1+pan
 document.getElementById('nextBtn').onclick=()=>{currentIndex=(currentIndex+1)%panels.length;updatePanels();};
 updatePanels();
 
-// ===== регистрация и профиль =====
 function toggleEye(inputId,iconId){
   const input=document.getElementById(inputId);
   const icon=document.getElementById(iconId);
@@ -419,7 +415,6 @@ loginForm.addEventListener('submit', e => {
   location.reload();
 });
 
-// ===== отображение профиля =====
 function updateProfile() {
   const user = getCurrentUser();
   if (user) {
@@ -435,7 +430,6 @@ function updateProfile() {
 
 updateProfile();
 
-// ===== панель профиля =====
 avatarBtn.onclick = () => {
   profilePanel.classList.toggle('visible');
 };
@@ -445,13 +439,11 @@ document.addEventListener('click', e => {
   }
 });
 
-// ===== выход =====
 logoutBtn.onclick = () => {
   localStorage.removeItem('user');
   location.reload();
 };
 
-// ===== адаптация при загрузке =====
 window.addEventListener('load', () => {
   visibleCount = window.innerWidth <= 600 ? 3 : 5;
   updatePanels();
@@ -459,5 +451,3 @@ window.addEventListener('load', () => {
 </script>
 </body>
 </html>
-
-

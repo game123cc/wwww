@@ -246,7 +246,6 @@ body {
 </style>
 </head>
 <body>
-<!-- ... ВЕСЬ ТВОЙ HTML остаётся без изменений ... -->
 
 <script>
 // ===== звук =====
@@ -269,7 +268,7 @@ function getVisibleCount(){return window.innerWidth<=600?3:5;}
 let visibleCount=getVisibleCount();
 function clearPanelStyle(p){p.style.boxShadow='';const t=p.querySelector('.panel-title');if(t){t.style.color='';t.style.textShadow='';}}
 
-// ===== ИСПРАВЛЕННАЯ updatePanels =====
+// ===== исправленная updatePanels =====
 function updatePanels(){
   visibleCount=getVisibleCount();
   panels.forEach(p=>{
@@ -280,13 +279,14 @@ function updatePanels(){
   });
 
   for(let i=0;i<visibleCount;i++){
-    const idx=(currentIndex+i+panels.length)%panels.length;
+    const idx=currentIndex+i;
+    if(idx>=panels.length) break;
     const p=panels[idx];
     p.style.opacity='1';
     p.style.pointerEvents='auto';
 
     const centerOffset=Math.floor(visibleCount/2);
-    const centerIndex=(currentIndex+centerOffset+panels.length)%panels.length;
+    const centerIndex=currentIndex+centerOffset;
 
     if(idx===centerIndex){
       p.classList.add('active');
@@ -300,27 +300,44 @@ function updatePanels(){
       }
     }
   }
-  currentIndex=((currentIndex%panels.length)+panels.length)%panels.length;
 }
-// ===== конец исправления =====
 
-// стрелки
-document.getElementById('prevBtn').onclick=()=>{currentIndex=(currentIndex-1+panels.length)%panels.length;updatePanels();};
-document.getElementById('nextBtn').onclick=()=>{currentIndex=(currentIndex+1)%panels.length;updatePanels();};
+// ===== начальная позиция (первая по центру) =====
+currentIndex = 0;
+const startCenterOffset = Math.floor(getVisibleCount()/2);
+currentIndex = 0 - startCenterOffset < 0 ? 0 : 0 - startCenterOffset;
+updatePanels();
+
+// ===== стрелки с ограничением =====
+document.getElementById('prevBtn').onclick=()=>{
+  if(currentIndex>0){ currentIndex--; updatePanels(); }
+};
+document.getElementById('nextBtn').onclick=()=>{
+  if(currentIndex < panels.length - visibleCount){ currentIndex++; updatePanels(); }
+};
 
 // клик по панели
-topPanels.addEventListener('click',(e)=>{const clicked=e.target.closest('.panel');if(!clicked)return;
-const idx=panels.indexOf(clicked);if(idx===-1)return;
-const centerOffset=Math.floor(getVisibleCount()/2);
-currentIndex=(idx-centerOffset+panels.length)%panels.length;
-updatePanels();});
-updatePanels();
-window.addEventListener('resize',()=>{const oldVisible=visibleCount;const newVisible=getVisibleCount();
-if(oldVisible!==newVisible){const centerOffsetOld=Math.floor(oldVisible/2);
-const centerIndex=(currentIndex+centerOffsetOld+panels.length)%panels.length;
-const centerOffsetNew=Math.floor(newVisible/2);
-currentIndex=(centerIndex-centerOffsetNew+panels.length)%panels.length;}
-updatePanels();});
+topPanels.addEventListener('click',(e)=>{
+  const clicked=e.target.closest('.panel');
+  if(!clicked)return;
+  const idx=panels.indexOf(clicked);
+  if(idx===-1)return;
+  const centerOffset=Math.floor(getVisibleCount()/2);
+  currentIndex=idx-centerOffset;
+  if(currentIndex<0) currentIndex=0;
+  if(currentIndex>panels.length-visibleCount) currentIndex=panels.length-visibleCount;
+  updatePanels();
+});
+
+window.addEventListener('resize',()=>{
+  const oldVisible=visibleCount;
+  const newVisible=getVisibleCount();
+  if(oldVisible!==newVisible){
+    const centerOffsetNew=Math.floor(newVisible/2);
+    if(currentIndex>panels.length-newVisible){currentIndex=panels.length-newVisible;}
+  }
+  updatePanels();
+});
 </script>
 </body>
 </html>

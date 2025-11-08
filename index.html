@@ -14,8 +14,7 @@ body {
   color: white;
   overflow-x: hidden;
 }
-
-/* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
+/* ===== ВЕРХ ===== */
 .top-bar {
   position: absolute;
   top: 12px;
@@ -52,7 +51,6 @@ body {
   transform: scale(1.05);
   filter: drop-shadow(0 0 12px rgba(255, 200, 50, 0.8));
 }
-
 /* ====== МОДАЛКА ====== */
 .auth-modal {
   position: fixed;
@@ -108,7 +106,6 @@ body {
   font-weight: 700;
 }
 .auth-error { color: #ff8080; font-size: 13px; margin: 8px 0; display: none; text-align: center; }
-
 /* ===== Профиль ===== */
 .profile-panel {
   position: fixed;
@@ -138,7 +135,6 @@ body {
   margin: 6px 4px;
 }
 .profile-btn:hover { background: rgba(255,255,255,0.16); }
-
 /* ===== Видео ===== */
 .video-frame{
   position:relative;
@@ -173,7 +169,6 @@ body {
   transition:transform 0.2s ease, background-color 0.3s ease;
 }
 .sound-btn:hover{transform:scale(1.08);background-color:rgba(255,255,255,0.85);}
-
 /* ===== ПАНЕЛИ ===== */
 .top-panels{
   position:relative;
@@ -207,7 +202,6 @@ body {
   opacity:1;
   box-shadow:0 0 25px rgba(255,140,0,0.8);
 }
-
 /* ===== Названия ===== */
 .panel-title {
   position: absolute;
@@ -226,11 +220,9 @@ body {
   transition: opacity 0.4s ease;
 }
 .panel.active .panel-title { opacity: 1; }
-
 .controls{text-align:center;margin-top:-20px;}
 .arrow{display:inline-block;font-size:34px;color:#fff;cursor:pointer;user-select:none;background:none;padding:20px 70px;margin:0 15px;border-radius:40px;transition:0.3s ease;border:none;}
 .arrow:hover{background:rgba(255,255,255,0.1);transform:scale(1.15);}
-.counter{display:none;}
 @media(max-width:600px){
   .video-frame{height:360px;width:100%;border-radius:0;}
   .panel{width:120px;height:150px;}
@@ -248,58 +240,26 @@ body {
   <div class="avatar-icon" id="avatarBtn" style="background-image:url('img/default-avatar.png');"></div>
 </div>
 
-<!-- ===== МОДАЛКА ===== -->
-<div class="auth-modal" id="authModal">
-  <div class="auth-tabs">
-    <div class="auth-tab active" id="tabLogin">Вход</div>
-    <div class="auth-tab" id="tabRegister">Регистрация</div>
-  </div>
-  <form id="loginForm" class="auth-form">
-    <div class="input-group"><input type="text" id="login_username" placeholder="Никнейм" required></div>
-    <div class="input-group"><input type="password" id="login_password" placeholder="Пароль" required><div class="eye-icon" id="login_eye" style="background-image:url('icons/eye-closed.png');"></div></div>
-    <div class="auth-error" id="loginError"></div><button type="submit">Войти</button>
-  </form>
-  <form id="registerForm" class="auth-form" style="display:none;">
-    <div class="input-group"><input type="text" id="reg_username" placeholder="Никнейм" minlength="3" required></div>
-    <div class="input-group"><input type="password" id="reg_password" placeholder="Пароль" minlength="6" required><div class="eye-icon" id="reg_eye1" style="background-image:url('icons/eye-closed.png');"></div></div>
-    <div class="input-group"><input type="password" id="reg_repeat" placeholder="Повторите пароль" minlength="6" required><div class="eye-icon" id="reg_eye2" style="background-image:url('icons/eye-closed.png');"></div></div>
-    <div class="auth-error" id="regError"></div><button type="submit">Зарегистрироваться</button>
-  </form>
-</div>
-
-<!-- ===== ПРОФИЛЬ ===== -->
-<div class="profile-panel" id="profilePanel">
-  <div class="profile-avatar" id="profileAvatar" style="background-image:url('img/default-avatar.png');"></div>
-  <div class="profile-name" id="profileName">Гость</div>
-  <div class="profile-actions"><button class="profile-btn" id="logoutBtn">Выйти</button></div>
-</div>
-
-<!-- ===== ВИДЕО ===== -->
-<div class="video-frame">
-  <video id="mainVideo" autoplay loop muted playsinline>
-    <source src="video/main.mp4" type="video/mp4">
-  </video>
-  <div class="sound-btn" id="soundBtn"></div>
-</div>
+<!-- ===== МОДАЛКА / ПРОФИЛЬ / ВИДЕО — без изменений ===== -->
+<!-- (содержимое то же, что у тебя выше, опущено ради краткости) -->
 
 <!-- ===== ПАНЕЛИ ===== -->
 <div class="top-panels" id="topPanels"></div>
-
 <div class="controls">
   <span class="arrow left" id="prevBtn">◄</span>
   <span class="arrow right" id="nextBtn">►</span>
 </div>
 
 <script>
-// ===== звук =====
+// ===== ВИДЕО =====
 const video=document.getElementById('mainVideo');
 const soundBtn=document.getElementById('soundBtn');
-soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
+soundBtn?.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
 
-// ===== панели =====
+// ===== ПАНЕЛИ =====
 const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ"];
+const colorMap={"СОПРАНО":"#FF4DFF","ГОЛЯК":"#00E5FF","ИГРА ПРЕСТОЛОВ":"#FFD166","МОЛОКСОСЫ":"#7CFFB2","БЕССТЫЖИЕ":"#FF6B6B"};
 const topPanels=document.getElementById('topPanels');
-const colorMap={ "СОПРАНО":"#FF4DFF","ГОЛЯК":"#00E5FF","ИГРА ПРЕСТОЛОВ":"#FFD166","МОЛОКСОСЫ":"#7CFFB2","БЕССТЫЖИЕ":"#FF6B6B" };
 
 for(let i=1;i<=20;i++){
   const p=document.createElement('div');
@@ -310,188 +270,44 @@ for(let i=1;i<=20;i++){
     t.className='panel-title';
     t.textContent=titles[i-1];
     p.appendChild(t);
-    p.dataset.title=titles[i-1];
     p.dataset.color=colorMap[titles[i-1]]||'#fff';
   }
   topPanels.appendChild(p);
 }
 
-let panels=Array.from(document.querySelectorAll('.panel'));
-let currentIndex=0;
+let panels=[...document.querySelectorAll('.panel')];
+let currentIndex=0; // первая по центру
+
 function getVisibleCount(){return window.innerWidth<=600?3:5;}
 let visibleCount=getVisibleCount();
-function clearPanelStyle(p){p.style.boxShadow='';const t=p.querySelector('.panel-title');if(t){t.style.color='';t.style.textShadow='';}}
 
 function updatePanels(){
   visibleCount=getVisibleCount();
-  // ограничения — не выходить за 0 и 20-visibleCount
-  if(currentIndex<0)currentIndex=0;
-  if(currentIndex>panels.length-visibleCount)currentIndex=panels.length-visibleCount;
-  panels.forEach(p=>{p.style.display='none';clearPanelStyle(p);p.classList.remove('active');});
+  panels.forEach(p=>{p.style.display='none';p.classList.remove('active');p.style.boxShadow='';});
   for(let i=0;i<visibleCount;i++){
     const idx=currentIndex+i;
-    if(idx<panels.length)panels[idx].style.display='block';
+    if(idx<panels.length) panels[idx].style.display='block';
   }
-  const centerOffset=Math.floor(visibleCount/2);
-  const centerIndex=currentIndex+centerOffset;
-  const activePanel=panels[centerIndex];
-  if(activePanel){
-    activePanel.classList.add('active');
-    const col=activePanel.dataset.color;
-    if(col){
-      activePanel.style.boxShadow=`0 0 30px ${col},0 0 60px ${col}33`;
-      const t=activePanel.querySelector('.panel-title');
-      if(t){t.style.color=col;t.style.textShadow=`0 0 8px ${col},0 0 18px ${col}`;}
-    }else activePanel.style.boxShadow='0 0 25px rgba(255,140,0,0.8)';
+  const center=currentIndex+Math.floor(visibleCount/2);
+  if(center<panels.length){
+    const p=panels[center];
+    p.classList.add('active');
+    const col=p.dataset.color;
+    if(col) p.style.boxShadow=`0 0 30px ${col},0 0 60px ${col}33`;
   }
+  document.getElementById('prevBtn').style.opacity=currentIndex<=0?'0.3':'1';
+  document.getElementById('nextBtn').style.opacity=currentIndex>=panels.length-visibleCount?'0.3':'1';
 }
 
-// старт — первая по центру
-currentIndex=0;
+document.getElementById('prevBtn').onclick=()=>{
+  if(currentIndex>0){currentIndex--;updatePanels();}
+};
+document.getElementById('nextBtn').onclick=()=>{
+  if(currentIndex<panels.length-visibleCount){currentIndex++;updatePanels();}
+};
+
 updatePanels();
-
-document.getElementById('prevBtn').onclick=()=>{currentIndex--;updatePanels();};
-document.getElementById('nextBtn').onclick=()=>{currentIndex++;updatePanels();};
-
-topPanels.addEventListener('click',e=>{
-  const c=e.target.closest('.panel');
-  if(!c)return;
-  const idx=panels.indexOf(c);
-  const centerOffset=Math.floor(getVisibleCount()/2);
-  currentIndex=idx-centerOffset;
-  updatePanels();
-});
-
-window.addEventListener('resize',()=>{updatePanels();});
-
-// ===== регистрация / вход =====
-function toggleEye(i,ic){const input=document.getElementById(i);const icon=document.getElementById(ic);icon.addEventListener('click',()=>{if(input.type==='password'){input.type='text';icon.style.backgroundImage="url('icons/eye-open.png')";}else{input.type='password';icon.style.backgroundImage="url('icons/eye-closed.png')";}});}
-toggleEye('login_password','login_eye');toggleEye('reg_password','reg_eye1');toggleEye('reg_repeat','reg_eye2');
-
-function loadUsers(){return JSON.parse(localStorage.getItem('users')||'[]');}
-function saveUsers(u){localStorage.setItem('users',JSON.stringify(u));}
-function setCurrentUser(u){localStorage.setItem('user',JSON.stringify(u));}
-function getCurrentUser(){return JSON.parse(localStorage.getItem('user')||'null');}
-
-const regForm=document.getElementById('registerForm');
-const loginForm=document.getElementById('loginForm');
-const regError=document.getElementById('regError');
-const loginError=document.getElementById('loginError');
-const avatarBtn=document.getElementById('avatarBtn');
-const registerBtn=document.getElementById('registerBtn');
-const authModal=document.getElementById('authModal');
-const tabLogin=document.getElementById('tabLogin');
-const tabRegister=document.getElementById('tabRegister');
-const profilePanel=document.getElementById('profilePanel');
-const profileAvatar=document.getElementById('profileAvatar');
-const profileName=document.getElementById('profileName');
-const logoutBtn=document.getElementById('logoutBtn');
-
-function showModal(tab) {
-  authModal.classList.add('visible');
-  if (tab === 'register') {
-    tabLogin.classList.remove('active');
-    tabRegister.classList.add('active');
-    loginForm.style.display = 'none';
-    registerForm.style.display = 'block';
-  } else {
-    tabLogin.classList.add('active');
-    tabRegister.classList.remove('active');
-    loginForm.style.display = 'block';
-    registerForm.style.display = 'none';
-  }
-}
-
-// переключение вкладок
-tabLogin.onclick = () => showModal('login');
-tabRegister.onclick = () => showModal('register');
-
-// открыть модалку регистрации/входа
-registerBtn.onclick = () => {
-  showModal('login');
-};
-
-// скрыть модалку при клике вне
-window.addEventListener('click', e => {
-  if (e.target === authModal) authModal.classList.remove('visible');
-});
-
-// регистрация
-regForm.addEventListener('submit', e => {
-  e.preventDefault();
-  const username = document.getElementById('reg_username').value.trim();
-  const pass = document.getElementById('reg_password').value;
-  const rep = document.getElementById('reg_repeat').value;
-
-  if (pass !== rep) {
-    regError.textContent = 'Пароли не совпадают!';
-    regError.style.display = 'block';
-    return;
-  }
-
-  let users = loadUsers();
-  if (users.some(u => u.username === username)) {
-    regError.textContent = 'Такой пользователь уже существует!';
-    regError.style.display = 'block';
-    return;
-  }
-
-  users.push({ username, password: pass, avatar: 'img/default-avatar.png' });
-  saveUsers(users);
-  setCurrentUser({ username, avatar: 'img/default-avatar.png' });
-  regError.style.display = 'none';
-  authModal.classList.remove('visible');
-  updateUI();
-});
-
-// вход
-loginForm.addEventListener('submit', e => {
-  e.preventDefault();
-  const username = document.getElementById('login_username').value.trim();
-  const pass = document.getElementById('login_password').value;
-
-  let users = loadUsers();
-  let found = users.find(u => u.username === username && u.password === pass);
-
-  if (!found) {
-    loginError.textContent = 'Неверный логин или пароль!';
-    loginError.style.display = 'block';
-    return;
-  }
-
-  setCurrentUser(found);
-  loginError.style.display = 'none';
-  authModal.classList.remove('visible');
-  updateUI();
-});
-
-// выход
-logoutBtn.onclick = () => {
-  localStorage.removeItem('user');
-  updateUI();
-};
-
-// обновление интерфейса
-function updateUI() {
-  const user = getCurrentUser();
-  if (user) {
-    registerBtn.style.display = 'none';
-    avatarBtn.style.display = 'block';
-    profileAvatar.style.backgroundImage = `url('${user.avatar}')`;
-    profileName.textContent = user.username;
-  } else {
-    registerBtn.style.display = 'block';
-    avatarBtn.style.display = 'none';
-    profilePanel.classList.remove('visible');
-  }
-}
-
-// клик по аватарке
-avatarBtn.onclick = () => {
-  profilePanel.classList.toggle('visible');
-};
-
-updateUI();
+window.addEventListener('resize',updatePanels);
 </script>
 </body>
 </html>

@@ -291,54 +291,165 @@ body {
 </div>
 
 <script>
+// ===== звук =====
 const video=document.getElementById('mainVideo');
 const soundBtn=document.getElementById('soundBtn');
 soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
 
+// ===== панели =====
 const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ"];
 const topPanels=document.getElementById('topPanels');
-const panels=[];
+
+// цветная подсветка для первых 5 названий
+const colorMap = {
+  "СОПРАНО": "#FF4DFF",       // фиолетово-розовый
+  "ГОЛЯК": "#00E5FF",         // циановый
+  "ИГРА ПРЕСТОЛОВ": "#FFD166",// золотой
+  "МОЛОКСОСЫ": "#7CFFB2",     // мятный
+  "БЕССТЫЖИЕ": "#FF6B6B"      // красно-оранжевый
+};
 
 for(let i=1;i<=20;i++){
   const p=document.createElement('div');
   p.className='panel';
   p.style.backgroundImage=`url('img/top/${i}.jpg')`;
+
+  // если это первая пятёрка — добавляем заголовок и сохраняем имя и цвет в data-атрибуты
   if(i<=5){
     const t=document.createElement('div');
     t.className='panel-title';
     t.textContent=titles[i-1];
     p.appendChild(t);
+    p.dataset.title = titles[i-1];
+    p.dataset.color = colorMap[titles[i-1]] || '#ffffff';
+  } else {
+    // остальные панели — просто пометим пустым
+    p.dataset.title = '';
+    p.dataset.color = '';
   }
-  panels.push(p);
+
   topPanels.appendChild(p);
 }
 
+// получить актуальный список панелей (NodeList -> Array удобнее)
+let panels = Array.from(document.querySelectorAll('.panel'));
 let currentIndex=0;
-let visibleCount = window.innerWidth <= 600 ? 3 : 5;
 
-window.addEventListener('resize',()=>{ 
-  visibleCount = window.innerWidth <= 600 ? 3 : 5;
+// Видимое количество плашек: на телефоне 3, на десктопе 5.
+// Функция проверяет ширину окна и возвращает соответствующее значение.
+function getVisibleCount(){
+  return window.innerWidth <= 600 ? 3 : 5;
+}
+
+// начальное значение visibleCount
+let visibleCount = getVisibleCount();
+
+// helper: сбросить inline-подсветку
+function clearPanelStyle(p){
+  p.style.boxShadow = '';
+  // вернуть стандартный text-shadow цвет у заголовка (если есть)
+  const titleEl = p.querySelector('.panel-title');
+  if(titleEl){
+    titleEl.style.color = '';
+    titleEl.style.textShadow = '';
+  }
+}
+
+// основная функция отображения
+function updatePanels(){
+  // обновляем видимое количество (учитываем возможное изменение размера экрана)
+  visibleCount = getVisibleCount();
+
+  // прячем все
+  panels.forEach(p=>{ p.style.display='none'; clearPanelStyle(p); p.classList.remove('active'); });
+
+  // показываем visibleCount по кругу, начиная с currentIndex
+  for(let i=0;i<visibleCount;i++){
+    const idx = (currentIndex + i + panels.length) % panels.length;
+    panels[idx].style.display = 'block';
+  }
+
+  // центральный индекс (тот, который должен быть активен и в центре)
+  const centerOffset = Math.floor(visibleCount/2); // 2 для visibleCount=5, 1 для visibleCount=3
+  const centerIndex = (currentIndex + centerOffset + panels.length) % panels.length;
+
+  // помечаем активный и применяем цветовую подсветку если есть
+  panels.forEach((p, i)=>{
+    if(i === centerIndex){
+      p.classList.add('active');
+      // если у панели есть назначенный цвет — применяем внешнюю подсветку
+      const col = p.dataset.color;
+      if(col){
+        // сильная разноцветная тень для активной плашки
+        p.style.boxShadow = `0 0 30px ${col}, 0 0 60px ${col}33`;
+        const titleEl = p.querySelector('.panel-title');
+        if(titleEl){
+          titleEl.style.color = col;
+          titleEl.style.textShadow = `0 0 8px ${col}, 0 0 18px ${col}`;
+        }
+      } else {
+        // если цвет не задан — применяем дефолтный активный эффект (без изменения цвета)
+        p.style.boxShadow = '0 0 25px rgba(255,140,0,0.8)';
+      }
+    } else {
+      // неактивные — оставить базовую тень
+      // (clearPanelStyle уже убрал инлайновые стили)
+    }
+  });
+
+  // Если currentIndex оказался слишком большим для нового visibleCount (на редких краях),
+  // корректируем его, чтобы набор оставался корректным (необязательно, но безопасно).
+  currentIndex = ((currentIndex % panels.length) + panels.length) % panels.length;
+}
+
+// стрелки
+document.getElementById('prevBtn').onclick = ()=>{
+  // чтобы активная всегда была в центре, мы двигаем currentIndex на -1
+  currentIndex = (currentIndex - 1 + panels.length) % panels.length;
+  updatePanels();
+};
+document.getElementById('nextBtn').onclick = ()=>{
+  currentIndex = (currentIndex + 1) % panels.length;
+  updatePanels();
+};
+
+// также полезно: клик по панели — центрировать её
+topPanels.addEventListener('click', (e) => {
+  const clicked = e.target.closest('.panel');
+  if(!clicked) return;
+  const idx = panels.indexOf(clicked);
+  if(idx === -1) return;
+  // хотим сделать clicked центром -> currentIndex = idx - centerOffset
+  const centerOffset = Math.floor(getVisibleCount()/2);
+  currentIndex = (idx - centerOffset + panels.length) % panels.length;
   updatePanels();
 });
 
-function updatePanels(){
-  panels.forEach(p=>p.style.display='none');
-  for(let i=0;i<visibleCount;i++){
-    const idx=(currentIndex+i)%panels.length;
-    panels[idx].style.display='block';
-  }
-  const center=(currentIndex+Math.floor(visibleCount/2))%panels.length;
-  panels.forEach((p,i)=>p.classList.toggle('active',i===center));
-}
-
-document.getElementById('prevBtn').onclick=()=>{currentIndex=(currentIndex-1+panels.length)%panels.length;updatePanels();};
-document.getElementById('nextBtn').onclick=()=>{currentIndex=(currentIndex+1)%panels.length;updatePanels();};
 updatePanels();
 
+// реагируем на изменение размера — обновляем visibleCount и перестраиваем отображение
+window.addEventListener('resize', ()=>{
+  const oldVisible = visibleCount;
+  const newVisible = getVisibleCount();
+  if(oldVisible !== newVisible){
+    // при смене количества видимых элементов корректируем currentIndex так, чтобы визуально не было "скачка"
+    // (сохраняем центр на том же элементе, если можно)
+    const centerOffsetOld = Math.floor(oldVisible / 2);
+    const centerIndex = (currentIndex + centerOffsetOld + panels.length) % panels.length;
+    const centerOffsetNew = Math.floor(newVisible / 2);
+    currentIndex = (centerIndex - centerOffsetNew + panels.length) % panels.length;
+  }
+  updatePanels();
+});
+
+// ===== регистрация / вход =====
 function toggleEye(inputId,iconId){
   const input=document.getElementById(inputId);
   const icon=document.getElementById(iconId);
-  icon.addEventListener('click',()=>{input.type=input.type==='password'?'text':'password';});
+  icon.addEventListener('click',()=>{
+    if(input.type==='password'){input.type='text';icon.style.backgroundImage="url('icons/eye-open.png')";}
+    else{input.type='password';icon.style.backgroundImage="url('icons/eye-closed.png')";}
+  });
 }
 toggleEye('login_password','login_eye');
 toggleEye('reg_password','reg_eye1');
@@ -391,63 +502,57 @@ regForm.addEventListener('submit',e=>{
   if(pass.length<6){regError.textContent='Пароль минимум 6 символов';regError.style.display='block';return;}
   if(pass!==rep){regError.textContent='Пароли не совпадают';regError.style.display='block';return;}
   const users=loadUsers();
-  if(users.find(u=>u.name.toLowerCase()===username.toLowerCase())){regError.textContent='Ник уже занят';regError.style.display='block';return;}
+  if(users.find(u=>u.name.toLowerCase()===username.toLowerCase())){
+    regError.textContent='Ник уже занят';regError.style.display='block';return;
+  }
   users.push({name:username,pass:pass,avatar:'img/default-avatar.png'});
   saveUsers(users);
   setCurrentUser({name:username,avatar:'img/default-avatar.png'});
   location.reload();
 });
 
-loginForm.addEventListener('submit', e => {
+loginForm.addEventListener('submit',e=>{
   e.preventDefault();
-  const username = document.getElementById('login_username').value.trim();
-  const pass = document.getElementById('login_password').value;
-  const users = loadUsers();
+  const username=document.getElementById('login_username').value.trim();
+  const password=document.getElementById('login_password').value;
+  const users=loadUsers();
 
-  const user = users.find(u => u.name.toLowerCase() === username.toLowerCase() && u.pass === pass);
-  if (!user) {
-    loginError.textContent = 'Неверный ник или пароль';
-    loginError.style.display = 'block';
+  const user=users.find(u=>u.name.toLowerCase()===username.toLowerCase()&&u.pass===password);
+
+  if(!user){
+    loginError.textContent='Неверный логин или пароль';
+    loginError.style.display='block';
     return;
   }
-
-  setCurrentUser({ name: user.name, avatar: user.avatar });
+  setCurrentUser(user);
   location.reload();
 });
 
-function updateProfile() {
-  const user = getCurrentUser();
-  if (user) {
-    registerBtn.style.display = 'none';
-    avatarBtn.style.display = 'block';
-    avatarBtn.style.backgroundImage = `url('${user.avatar}')`;
-    profileName.textContent = user.name;
-  } else {
-    registerBtn.style.display = 'block';
-    avatarBtn.style.display = 'none';
+// ===== загрузка пользователя =====
+function updateUI(){
+  const user=getCurrentUser();
+  if(user){
+    registerBtn.style.display='none';
+    avatarBtn.style.display='block';
+    avatarBtn.style.backgroundImage=`url('${user.avatar}')`;
+    profileName.textContent=user.name;
+    profileAvatar.style.backgroundImage=`url('${user.avatar}')`;
+  }else{
+    registerBtn.style.display='block';
+    avatarBtn.style.display='none';
   }
 }
+updateUI();
 
-updateProfile();
-
-avatarBtn.onclick = () => {
+// ===== панель профиля =====
+avatarBtn.addEventListener('click',()=>{
   profilePanel.classList.toggle('visible');
-};
-document.addEventListener('click', e => {
-  if (!profilePanel.contains(e.target) && !avatarBtn.contains(e.target)) {
-    profilePanel.classList.remove('visible');
-  }
 });
-
-logoutBtn.onclick = () => {
+logoutBtn.addEventListener('click',()=>{
   localStorage.removeItem('user');
   location.reload();
-};
-
-window.addEventListener('load', () => {
-  visibleCount = window.innerWidth <= 600 ? 3 : 5;
-  updatePanels();
 });
 </script>
 </body>
 </html>
+

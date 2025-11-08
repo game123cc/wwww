@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Набросок коллекций</title>
+<style>
+:root { --accent: rgba(255,255,255,0.12); }
+body {
+  margin: 0;
+  padding: 0;
+  background: #1e1e1f;
+  font-family: Arial, sans-serif;
+  color: white;
+  overflow-x: hidden;
+}
+
+/* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
+.top-bar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 1300px;
+  height: 70px;
+  background: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 24px;
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+  z-index: 200;
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+}
+.register-icon, .avatar-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.25s ease, filter 0.3s ease;
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.5));
+  background-size: cover;
+  background-position: center;
+  margin-left: 10px;
+  flex: 0 0 auto;
+}
+.register-icon { background-image: url('icons/register.png'); }
+.avatar-icon { display: none; }
+.register-icon:hover, .avatar-icon:hover {
+  transform: scale(1.05);
+  filter: drop-shadow(0 0 12px rgba(255, 200, 50, 0.8));
+}
+
+/* ====== МОДАЛКА ====== */
+.auth-modal {
+  position: fixed;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%,-50%);
+  width: 360px;
+  background: rgba(10,10,10,0.9);
+  border-radius: 14px;
+  padding: 18px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+  z-index: 500;
+  display: none;
+  color: #fff;
+}
+.auth-modal.visible { display: block; }
+.auth-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+.auth-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 10px; background: rgba(255,255,255,0.04); }
+.auth-tab.active { background: rgba(255,255,255,0.12); font-weight: 700; }
+.auth-form { margin-top: 6px; }
+.input-group { position: relative; margin-bottom: 12px; }
+.auth-form input {
+  width: 100%;
+  padding: 10px 40px 10px 12px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255,255,255,0.05);
+  color: #fff;
+  outline: none;
+}
+.eye-icon {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 24px;
+  height: 24px;
+  background-size: cover;
+  background-position: center;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity .2s ease;
+}
+.eye-icon:hover { opacity: 1; }
+.auth-form button {
+  width: 100%;
+  padding: 10px;
+  border-radius: 8px;
+  border: none;
+  background: #fff;
+  color: #000;
+  cursor: pointer;
+  font-weight: 700;
+}
+.auth-error { color: #ff8080; font-size: 13px; margin: 8px 0; display: none; text-align: center; }
+
+/* ===== Профиль ===== */
+.profile-panel {
+  position: fixed;
+  top: 86px;
+  right: calc(5% + 12px);
+  width: 260px;
+  background: rgba(10,10,10,0.75);
+  border-radius: 12px;
+  padding: 18px;
+  display: none;
+  z-index: 300;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  backdrop-filter: blur(6px);
+}
+.profile-panel.visible { display: block; animation: pop .18s ease; }
+@keyframes pop { from {opacity: 0; transform: translateY(-6px) scale(.995);} to {opacity: 1; transform: translateY(0) scale(1);} }
+.profile-avatar { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 10px; background-size: cover; background-position: center; border: 2px solid rgba(255,255,255,0.06); }
+.profile-name { text-align: center; font-weight: 600; margin-bottom: 8px; }
+.profile-actions { text-align: center; margin-top: 6px; }
+.profile-btn {
+  border: none;
+  background: rgba(255,255,255,0.08);
+  color: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  margin: 6px 4px;
+}
+.profile-btn:hover { background: rgba(255,255,255,0.16); }
+
+/* ===== Видео ===== */
+.video-frame{
+  position:relative;
+  width:90%;
+  max-width:1300px;
+  height:600px;
+  background:#000;
+  border-radius:20px;
+  margin:20px auto 30px;
+  overflow:hidden;
+}
+.video-frame video{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  border-radius:20px;
+}
+.sound-btn{
+  position:absolute;
+  bottom:15px;
+  right:15px;
+  width:55px;
+  height:55px;
+  background-color:rgba(255,255,255,0.6);
+  background-image:url('icons/sound-off.png');
+  background-size:70% 70%;
+  background-repeat:no-repeat;
+  background-position:center;
+  border-radius:50%;
+  cursor:pointer;
+  z-index:120;
+  transition:transform 0.2s ease, background-color 0.3s ease;
+}
+.sound-btn:hover{transform:scale(1.08);background-color:rgba(255,255,255,0.85);}
+
+/* ===== ПАНЕЛИ ===== */
+.top-panels{
+  position:relative;
+  width:100%;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:40px;
+  margin:60px auto 40px;
+  perspective:1000px;
+}
+.panel{
+  position:relative;
+  width:180px;
+  height:200px;
+  background-size:cover;
+  background-position:center;
+  border-radius:10px;
+  transition:all 0.5s ease;
+  box-shadow:0 0 15px rgba(0,0,0,0.6);
+  filter:brightness(0.6);
+  transform:scale(0.9) rotateY(-20deg);
+  opacity:0.7;
+  overflow:hidden;
+}
+.panel.active{
+  width:260px;
+  height:280px;
+  transform:scale(1.1) rotateY(0deg);
+  filter:brightness(1.2);
+  opacity:1;
+  box-shadow:0 0 25px rgba(255,140,0,0.8);
+}
+
+/* ===== Названия ===== */
+.panel-title {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  padding: 12px 0;
+  background: rgba(0,0,0,0.5);
+  color: #ff7ffb;
+  text-shadow: 0 0 5px #ff00ff, 0 0 10px #ff00ff, 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+.panel.active .panel-title { opacity: 1; }
+
+.controls{text-align:center;margin-top:-20px;}
+.arrow{display:inline-block;font-size:34px;color:#fff;cursor:pointer;user-select:none;background:none;padding:20px 70px;margin:0 15px;border-radius:40px;transition:0.3s ease;border:none;}
+.arrow:hover{background:rgba(255,255,255,0.1);transform:scale(1.15);}
+.counter{display:none;}
+@media(max-width:600px){
+  .video-frame{height:360px;width:100%;border-radius:0;}
+  .panel{width:120px;height:150px;}
+  .panel.active{width:180px;height:200px;}
+  .arrow{padding:14px 40px;font-size:28px;}
+  .panel-title {font-size:18px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ===== ВЕРХ ===== -->
+<div class="top-bar">
+  <div class="register-icon" id="registerBtn"></div>
+  <div class="avatar-icon" id="avatarBtn" style="background-image:url('img/default-avatar.png');"></div>
+</div>
+
+<!-- ===== МОДАЛКА ===== -->
+<div class="auth-modal" id="authModal">
+  <div class="auth-tabs">
+    <div class="auth-tab active" id="tabLogin">Вход</div>
+    <div class="auth-tab" id="tabRegister">Регистрация</div>
+  </div>
+  <form id="loginForm" class="auth-form">
+    <div class="input-group"><input type="text" id="login_username" placeholder="Никнейм" required></div>
+    <div class="input-group"><input type="password" id="login_password" placeholder="Пароль" required><div class="eye-icon" id="login_eye" style="background-image:url('icons/eye-closed.png');"></div></div>
+    <div class="auth-error" id="loginError"></div><button type="submit">Войти</button>
+  </form>
+  <form id="registerForm" class="auth-form" style="display:none;">
+    <div class="input-group"><input type="text" id="reg_username" placeholder="Никнейм" minlength="3" required></div>
+    <div class="input-group"><input type="password" id="reg_password" placeholder="Пароль" minlength="6" required><div class="eye-icon" id="reg_eye1" style="background-image:url('icons/eye-closed.png');"></div></div>
+    <div class="input-group"><input type="password" id="reg_repeat" placeholder="Повторите пароль" minlength="6" required><div class="eye-icon" id="reg_eye2" style="background-image:url('icons/eye-closed.png');"></div></div>
+    <div class="auth-error" id="regError"></div><button type="submit">Зарегистрироваться</button>
+  </form>
+</div>
+
+<!-- ===== ПРОФИЛЬ ===== -->
+<div class="profile-panel" id="profilePanel">
+  <div class="profile-avatar" id="profileAvatar" style="background-image:url('img/default-avatar.png');"></div>
+  <div class="profile-name" id="profileName">Гость</div>
+  <div class="profile-actions"><button class="profile-btn" id="logoutBtn">Выйти</button></div>
+</div>
+
+<!-- ===== ВИДЕО ===== -->
+<div class="video-frame">
+  <video id="mainVideo" autoplay loop muted playsinline>
+    <source src="video/main.mp4" type="video/mp4">
+  </video>
+  <div class="sound-btn" id="soundBtn"></div>
+</div>
+
+<!-- ===== ПАНЕЛИ ===== -->
+<div class="top-panels" id="topPanels"></div>
+
+<div class="controls">
+  <span class="arrow left" id="prevBtn">◄</span>
+  <span class="arrow right" id="nextBtn">►</span>
+</div>
+
+<script>
+// ===== звук =====
+const video=document.getElementById('mainVideo');
+const soundBtn=document.getElementById('soundBtn');
+soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
+
+// ===== панели =====
+const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ"];
+const topPanels=document.getElementById('topPanels');
+
+// цветная подсветка для первых 5 названий
+const colorMap = {
+  "СОПРАНО": "#FF4DFF",       // фиолетово-розовый
+  "ГОЛЯК": "#00E5FF",         // циановый
+  "ИГРА ПРЕСТОЛОВ": "#FFD166",// золотой
+  "МОЛОКСОСЫ": "#7CFFB2",     // мятный
+  "БЕССТЫЖИЕ": "#FF6B6B"      // красно-оранжевый
+};
+
+for(let i=1;i<=20;i++){
+  const p=document.createElement('div');
+  p.className='panel';
+  p.style.backgroundImage=`url('img/top/${i}.jpg')`;
+
+  // если это первая пятёрка — добавляем заголовок и сохраняем имя и цвет в data-атрибуты
+  if(i<=5){
+    const t=document.createElement('div');
+    t.className='panel-title';
+    t.textContent=titles[i-1];
+    p.appendChild(t);
+    p.dataset.title = titles[i-1];
+    p.dataset.color = colorMap[titles[i-1]] || '#ffffff';
+  } else {
+    // остальные панели — просто пометим пустым
+    p.dataset.title = '';
+    p.dataset.color = '';
+  }
+
+  topPanels.appendChild(p);
+}
+
+// получить актуальный список панелей (NodeList -> Array удобнее)
+let panels = Array.from(document.querySelectorAll('.panel'));
+let currentIndex=0;
+const visibleCount=5;
+
+// helper: сбросить inline-подсветку
+function clearPanelStyle(p){
+  p.style.boxShadow = '';
+  // вернуть стандартный text-shadow цвет у заголовка (если есть)
+  const titleEl = p.querySelector('.panel-title');
+  if(titleEl){
+    titleEl.style.color = '';
+    titleEl.style.textShadow = '';
+  }
+}
+
+// основная функция отображения
+function updatePanels(){
+  // прячем все
+  panels.forEach(p=>{ p.style.display='none'; clearPanelStyle(p); p.classList.remove('active'); });
+
+  // показываем visibleCount по кругу, начиная с currentIndex
+  for(let i=0;i<visibleCount;i++){
+    const idx = (currentIndex + i + panels.length) % panels.length;
+    panels[idx].style.display = 'block';
+  }
+
+  // центральный индекс (тот, который должен быть активен и в центре)
+  const centerOffset = Math.floor(visibleCount/2); // 2 для visibleCount=5
+  const centerIndex = (currentIndex + centerOffset + panels.length) % panels.length;
+
+  // помечаем активный и применяем цветовую подсветку если есть
+  panels.forEach((p, i)=>{
+    if(i === centerIndex){
+      p.classList.add('active');
+      // если у панели есть назначенный цвет — применяем внешнюю подсветку
+      const col = p.dataset.color;
+      if(col){
+        // сильная разноцветная тень для активной плашки
+        p.style.boxShadow = `0 0 30px ${col}, 0 0 60px ${col}33`;
+        const titleEl = p.querySelector('.panel-title');
+        if(titleEl){
+          titleEl.style.color = col;
+          titleEl.style.textShadow = `0 0 8px ${col}, 0 0 18px ${col}`;
+        }
+      } else {
+        // если цвет не задан — применяем дефолтный активный эффект (без изменения цвета)
+        p.style.boxShadow = '0 0 25px rgba(255,140,0,0.8)';
+      }
+    } else {
+      // неактивные — оставить базовую тень
+      // (clearPanelStyle уже убрал инлайновые стили)
+    }
+  });
+
+  // ВАЖНО: после любых манипуляций обновим список panels (на случай динамики)
+  // но здесь панели статичны, оставим как есть.
+}
+
+// стрелки
+document.getElementById('prevBtn').onclick = ()=>{
+  // чтобы активная всегда была в центре, мы двигаем currentIndex на -1
+  currentIndex = (currentIndex - 1 + panels.length) % panels.length;
+  updatePanels();
+};
+document.getElementById('nextBtn').onclick = ()=>{
+  currentIndex = (currentIndex + 1) % panels.length;
+  updatePanels();
+};
+
+// также полезно: клик по панели — центрировать её
+topPanels.addEventListener('click', (e) => {
+  const clicked = e.target.closest('.panel');
+  if(!clicked) return;
+  const idx = panels.indexOf(clicked);
+  if(idx === -1) return;
+  // хотим сделать clicked центром -> currentIndex = idx - centerOffset
+  const centerOffset = Math.floor(visibleCount/2);
+  currentIndex = (idx - centerOffset + panels.length) % panels.length;
+  updatePanels();
+});
+
+updatePanels();
+
+// ===== регистрация / вход =====
+function toggleEye(inputId,iconId){
+  const input=document.getElementById(inputId);
+  const icon=document.getElementById(iconId);
+  icon.addEventListener('click',()=>{
+    if(input.type==='password'){input.type='text';icon.style.backgroundImage="url('icons/eye-open.png')";}
+    else{input.type='password';icon.style.backgroundImage="url('icons/eye-closed.png')";}
+  });
+}
+toggleEye('login_password','login_eye');
+toggleEye('reg_password','reg_eye1');
+toggleEye('reg_repeat','reg_eye2');
+
+function loadUsers(){return JSON.parse(localStorage.getItem('users')||'[]');}
+function saveUsers(u){localStorage.setItem('users',JSON.stringify(u));}
+function setCurrentUser(u){localStorage.setItem('user',JSON.stringify(u));}
+function getCurrentUser(){return JSON.parse(localStorage.getItem('user')||'null');}
+
+const regForm=document.getElementById('registerForm');
+const loginForm=document.getElementById('loginForm');
+const regError=document.getElementById('regError');
+const loginError=document.getElementById('loginError');
+const avatarBtn=document.getElementById('avatarBtn');
+const registerBtn=document.getElementById('registerBtn');
+const authModal=document.getElementById('authModal');
+const tabLogin=document.getElementById('tabLogin');
+const tabRegister=document.getElementById('tabRegister');
+const profilePanel=document.getElementById('profilePanel');
+const profileAvatar=document.getElementById('profileAvatar');
+const profileName=document.getElementById('profileName');
+const logoutBtn=document.getElementById('logoutBtn');
+
+function showModal(tab){
+  authModal.classList.add('visible');
+  if(tab==='register'){
+    tabRegister.classList.add('active');tabLogin.classList.remove('active');
+    loginForm.style.display='none';regForm.style.display='block';
+  }else{
+    tabLogin.classList.add('active');tabRegister.classList.remove('active');
+    regForm.style.display='none';loginForm.style.display='block';
+  }
+}
+tabLogin.onclick=()=>showModal('login');
+tabRegister.onclick=()=>showModal('register');
+registerBtn.onclick=()=>showModal('login');
+document.addEventListener('click',e=>{
+  if(authModal.classList.contains('visible')&&!authModal.contains(e.target)&&!registerBtn.contains(e.target)){
+    authModal.classList.remove('visible');
+  }
+});
+
+regForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const username=document.getElementById('reg_username').value.trim();
+  const pass=document.getElementById('reg_password').value;
+  const rep=document.getElementById('reg_repeat').value;
+  if(username.length<3){regError.textContent='Ник минимум 3 символа';regError.style.display='block';return;}
+  if(pass.length<6){regError.textContent='Пароль минимум 6 символов';regError.style.display='block';return;}
+  if(pass!==rep){regError.textContent='Пароли не совпадают';regError.style.display='block';return;}
+  const users=loadUsers();
+  if(users.find(u=>u.name.toLowerCase()===username.toLowerCase())){
+    regError.textContent='Ник уже занят';regError.style.display='block';return;
+  }
+  users.push({name:username,pass:pass,avatar:'img/default-avatar.png'});
+  saveUsers(users);
+  setCurrentUser({name:username,avatar:'img/default-avatar.png'});
+  location.reload();
+});
+
+loginForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const username=document.getElementById('login_username').value.trim();
+  const password=document.getElementById('login_password').value;
+  const users=loadUsers();
+
+  const user=users.find(u=>u.name.toLowerCase()===username.toLowerCase()&&u.pass===password);
+
+  if(!user){
+    loginError.textContent='Неверный логин или пароль';
+    loginError.style.display='block';
+    return;
+  }
+  setCurrentUser(user);
+  location.reload();
+});
+
+// ===== загрузка пользователя =====
+function updateUI(){
+  const user=getCurrentUser();
+  if(user){
+    registerBtn.style.display='none';
+    avatarBtn.style.display='block';
+    avatarBtn.style.backgroundImage=`url('${user.avatar}')`;
+    profileName.textContent=user.name;
+    profileAvatar.style.backgroundImage=`url('${user.avatar}')`;
+  }else{
+    registerBtn.style.display='block';
+    avatarBtn.style.display='none';
+  }
+}
+updateUI();
+
+// ===== панель профиля =====
+avatarBtn.addEventListener('click',()=>{
+  profilePanel.classList.toggle('visible');
+});
+logoutBtn.addEventListener('click',()=>{
+  localStorage.removeItem('user');
+  location.reload();
+});
+</script>
+</body>
+</html>
+
+

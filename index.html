@@ -231,6 +231,7 @@ body {
 .arrow{display:inline-block;font-size:34px;color:#fff;cursor:pointer;user-select:none;background:none;padding:20px 70px;margin:0 15px;border-radius:40px;transition:0.3s ease;border:none;}
 .arrow:hover{background:rgba(255,255,255,0.1);transform:scale(1.15);}
 .counter{display:none;}
+
 @media(max-width:600px){
   .video-frame{height:360px;width:100%;border-radius:0;}
   .panel{width:120px;height:150px;}
@@ -299,120 +300,39 @@ soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.b
 // ===== панели =====
 const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ"];
 const topPanels=document.getElementById('topPanels');
-
-// цветная подсветка для первых 5 названий
-const colorMap = {
-  "СОПРАНО": "#FF4DFF",       // фиолетово-розовый
-  "ГОЛЯК": "#00E5FF",         // циановый
-  "ИГРА ПРЕСТОЛОВ": "#FFD166",// золотой
-  "МОЛОКСОСЫ": "#7CFFB2",     // мятный
-  "БЕССТЫЖИЕ": "#FF6B6B"      // красно-оранжевый
-};
-
 for(let i=1;i<=20;i++){
   const p=document.createElement('div');
   p.className='panel';
   p.style.backgroundImage=`url('img/top/${i}.jpg')`;
-
-  // если это первая пятёрка — добавляем заголовок и сохраняем имя и цвет в data-атрибуты
   if(i<=5){
     const t=document.createElement('div');
     t.className='panel-title';
     t.textContent=titles[i-1];
     p.appendChild(t);
-    p.dataset.title = titles[i-1];
-    p.dataset.color = colorMap[titles[i-1]] || '#ffffff';
-  } else {
-    // остальные панели — просто пометим пустым
-    p.dataset.title = '';
-    p.dataset.color = '';
   }
-
   topPanels.appendChild(p);
 }
-
-// получить актуальный список панелей (NodeList -> Array удобнее)
-let panels = Array.from(document.querySelectorAll('.panel'));
+let panels = document.querySelectorAll('.panel');
 let currentIndex=0;
-const visibleCount=5;
 
-// helper: сбросить inline-подсветку
-function clearPanelStyle(p){
-  p.style.boxShadow = '';
-  // вернуть стандартный text-shadow цвет у заголовка (если есть)
-  const titleEl = p.querySelector('.panel-title');
-  if(titleEl){
-    titleEl.style.color = '';
-    titleEl.style.textShadow = '';
-  }
-}
-
-// основная функция отображения
-function updatePanels(){
-  // прячем все
-  panels.forEach(p=>{ p.style.display='none'; clearPanelStyle(p); p.classList.remove('active'); });
-
-  // показываем visibleCount по кругу, начиная с currentIndex
-  for(let i=0;i<visibleCount;i++){
-    const idx = (currentIndex + i + panels.length) % panels.length;
-    panels[idx].style.display = 'block';
-  }
-
-  // центральный индекс (тот, который должен быть активен и в центре)
-  const centerOffset = Math.floor(visibleCount/2); // 2 для visibleCount=5
-  const centerIndex = (currentIndex + centerOffset + panels.length) % panels.length;
-
-  // помечаем активный и применяем цветовую подсветку если есть
-  panels.forEach((p, i)=>{
-    if(i === centerIndex){
-      p.classList.add('active');
-      // если у панели есть назначенный цвет — применяем внешнюю подсветку
-      const col = p.dataset.color;
-      if(col){
-        // сильная разноцветная тень для активной плашки
-        p.style.boxShadow = `0 0 30px ${col}, 0 0 60px ${col}33`;
-        const titleEl = p.querySelector('.panel-title');
-        if(titleEl){
-          titleEl.style.color = col;
-          titleEl.style.textShadow = `0 0 8px ${col}, 0 0 18px ${col}`;
-        }
-      } else {
-        // если цвет не задан — применяем дефолтный активный эффект (без изменения цвета)
-        p.style.boxShadow = '0 0 25px rgba(255,140,0,0.8)';
-      }
-    } else {
-      // неактивные — оставить базовую тень
-      // (clearPanelStyle уже убрал инлайновые стили)
-    }
-  });
-
-  // ВАЖНО: после любых манипуляций обновим список panels (на случай динамики)
-  // но здесь панели статичны, оставим как есть.
-}
-
-// стрелки
-document.getElementById('prevBtn').onclick = ()=>{
-  // чтобы активная всегда была в центре, мы двигаем currentIndex на -1
-  currentIndex = (currentIndex - 1 + panels.length) % panels.length;
-  updatePanels();
-};
-document.getElementById('nextBtn').onclick = ()=>{
-  currentIndex = (currentIndex + 1) % panels.length;
-  updatePanels();
-};
-
-// также полезно: клик по панели — центрировать её
-topPanels.addEventListener('click', (e) => {
-  const clicked = e.target.closest('.panel');
-  if(!clicked) return;
-  const idx = panels.indexOf(clicked);
-  if(idx === -1) return;
-  // хотим сделать clicked центром -> currentIndex = idx - centerOffset
-  const centerOffset = Math.floor(visibleCount/2);
-  currentIndex = (idx - centerOffset + panels.length) % panels.length;
+// 👇 изменение только тут
+let visibleCount = window.innerWidth <= 600 ? 3 : 5;
+window.addEventListener('resize',()=>{
+  visibleCount = window.innerWidth <= 600 ? 3 : 5;
   updatePanels();
 });
 
+function updatePanels(){
+  panels.forEach((p,i)=>p.style.display='none');
+  for(let i=0;i<visibleCount;i++){
+    const index=(currentIndex+i)%panels.length;
+    panels[index].style.display='block';
+  }
+  const centerIndex=(currentIndex+Math.floor(visibleCount/2))%panels.length;
+  panels.forEach((p,i)=>p.classList.toggle('active',i===centerIndex));
+}
+document.getElementById('prevBtn').onclick=()=>{currentIndex=(currentIndex-1+panels.length)%panels.length;updatePanels();};
+document.getElementById('nextBtn').onclick=()=>{currentIndex=(currentIndex+1)%panels.length;updatePanels();};
 updatePanels();
 
 // ===== регистрация / вход =====
@@ -428,6 +348,7 @@ toggleEye('login_password','login_eye');
 toggleEye('reg_password','reg_eye1');
 toggleEye('reg_repeat','reg_eye2');
 
+// === Локальное хранилище пользователей ===
 function loadUsers(){return JSON.parse(localStorage.getItem('users')||'[]');}
 function saveUsers(u){localStorage.setItem('users',JSON.stringify(u));}
 function setCurrentUser(u){localStorage.setItem('user',JSON.stringify(u));}
@@ -466,6 +387,7 @@ document.addEventListener('click',e=>{
   }
 });
 
+// ===== регистрация =====
 regForm.addEventListener('submit',e=>{
   e.preventDefault();
   const username=document.getElementById('reg_username').value.trim();
@@ -484,14 +406,13 @@ regForm.addEventListener('submit',e=>{
   location.reload();
 });
 
+// ===== вход =====
 loginForm.addEventListener('submit',e=>{
   e.preventDefault();
   const username=document.getElementById('login_username').value.trim();
   const password=document.getElementById('login_password').value;
   const users=loadUsers();
-
   const user=users.find(u=>u.name.toLowerCase()===username.toLowerCase()&&u.pass===password);
-
   if(!user){
     loginError.textContent='Неверный логин или пароль';
     loginError.style.display='block';
@@ -501,7 +422,7 @@ loginForm.addEventListener('submit',e=>{
   location.reload();
 });
 
-// ===== загрузка пользователя =====
+// ===== загрузка пользователя и UI =====
 function updateUI(){
   const user=getCurrentUser();
   if(user){
@@ -528,5 +449,3 @@ logoutBtn.addEventListener('click',()=>{
 </script>
 </body>
 </html>
-
-

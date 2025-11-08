@@ -230,7 +230,7 @@ body {
 .controls{text-align:center;margin-top:-20px;}
 .arrow{display:inline-block;font-size:34px;color:#fff;cursor:pointer;user-select:none;background:none;padding:20px 70px;margin:0 15px;border-radius:40px;transition:0.3s ease;border:none;}
 .arrow:hover{background:rgba(255,255,255,0.1);transform:scale(1.15);}
-.counter{display:none;}
+.counter{display:inline-block;font-size:24px;font-weight:bold;color:#ccc;vertical-align:middle;}
 @media(max-width:600px){
   .video-frame{height:360px;width:100%;border-radius:0;}
   .panel{width:120px;height:150px;}
@@ -248,116 +248,269 @@ body {
   <div class="avatar-icon" id="avatarBtn" style="background-image:url('img/default-avatar.png');"></div>
 </div>
 
-<!-- ===== ПРОФИЛЬ, МОДАЛКИ и ВИДЕО опущены для краткости (без изменений) ===== -->
-<!-- ... -->
+<!-- ===== МОДАЛКА ===== -->
+<div class="auth-modal" id="authModal">
+  <div class="auth-tabs">
+    <div class="auth-tab active" id="tabLogin">Вход</div>
+    <div class="auth-tab" id="tabRegister">Регистрация</div>
+  </div>
+  <form id="loginForm" class="auth-form">
+    <div class="input-group"><input type="text" id="login_username" placeholder="Никнейм" required></div>
+    <div class="input-group"><input type="password" id="login_password" placeholder="Пароль" required><div class="eye-icon" id="login_eye" style="background-image:url('icons/eye-closed.png');"></div></div>
+    <div class="auth-error" id="loginError"></div><button type="submit">Войти</button>
+  </form>
+  <form id="registerForm" class="auth-form" style="display:none;">
+    <div class="input-group"><input type="text" id="reg_username" placeholder="Никнейм" minlength="3" required></div>
+    <div class="input-group"><input type="password" id="reg_password" placeholder="Пароль" minlength="6" required><div class="eye-icon" id="reg_eye1" style="background-image:url('icons/eye-closed.png');"></div></div>
+    <div class="input-group"><input type="password" id="reg_repeat" placeholder="Повторите пароль" minlength="6" required><div class="eye-icon" id="reg_eye2" style="background-image:url('icons/eye-closed.png');"></div></div>
+    <div class="auth-error" id="regError"></div><button type="submit">Зарегистрироваться</button>
+  </form>
+</div>
+
+<!-- ===== ПРОФИЛЬ ===== -->
+<div class="profile-panel" id="profilePanel">
+  <div class="profile-avatar" id="profileAvatar" style="background-image:url('img/default-avatar.png');"></div>
+  <div class="profile-name" id="profileName">Гость</div>
+  <div class="profile-actions"><button class="profile-btn" id="logoutBtn">Выйти</button></div>
+</div>
+
+<!-- ===== ВИДЕО ===== -->
+<div class="video-frame">
+  <video id="mainVideo" autoplay loop muted playsinline>
+    <source src="video/main.mp4" type="video/mp4">
+  </video>
+  <div class="sound-btn" id="soundBtn"></div>
+</div>
 
 <!-- ===== ПАНЕЛИ ===== -->
 <div class="top-panels" id="topPanels"></div>
 
 <div class="controls">
   <span class="arrow left" id="prevBtn">◄</span>
+  <span class="counter" id="counter">1/20</span>
   <span class="arrow right" id="nextBtn">►</span>
 </div>
 
 <script>
 // ===== звук =====
 const video=document.getElementById('mainVideo');
-if(video){
-  const soundBtn=document.getElementById('soundBtn');
-  soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
-}
+const soundBtn=document.getElementById('soundBtn');
+soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
 
 // ===== панели =====
-const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ"];
-const topPanels=document.getElementById('topPanels');
+const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ","ЗАДОРНЫЕ ДРУЗЬЯ","ДОМ ДРАКОНА","МИРОТВОРЕЦ","ПАЦАНЫ","ВО ВСЕ ТЯЖКИЕ","МИСТЕР ПИКЛЗ"];
 const colorMap = {
   "СОПРАНО": "#FF4DFF",
   "ГОЛЯК": "#00E5FF",
   "ИГРА ПРЕСТОЛОВ": "#FFD166",
   "МОЛОКСОСЫ": "#7CFFB2",
-  "БЕССТЫЖИЕ": "#FF6B6B"
+  "БЕССТЫЖИЕ": "#FF6B6B",
+  "ЗАДОРНЫЕ ДРУЗЬЯ": "#FFAA33",
+  "ДОМ ДРАКОНА": "#FF3333",
+  "МИРОТВОРЕЦ": "#66FFEE",
+  "ПАЦАНЫ": "#FF4444",
+  "ВО ВСЕ ТЯЖКИЕ": "#99FF33",
+  "МИСТЕР ПИКЛЗ": "#00FF66"
 };
+
+const topPanels=document.getElementById('topPanels');
 for(let i=1;i<=20;i++){
   const p=document.createElement('div');
   p.className='panel';
   p.style.backgroundImage=`url('img/top/${i}.jpg')`;
-  if(i<=5){
+  if(i<=titles.length){
     const t=document.createElement('div');
     t.className='panel-title';
     t.textContent=titles[i-1];
     p.appendChild(t);
-    p.dataset.title = titles[i-1];
-    p.dataset.color = colorMap[titles[i-1]] || '#ffffff';
-  } else { p.dataset.title=''; p.dataset.color=''; }
+    p.dataset.title=titles[i-1];
+    p.dataset.color=colorMap[titles[i-1]]||'#ffffff';
+  }
   topPanels.appendChild(p);
 }
 
-let panels = Array.from(document.querySelectorAll('.panel'));
-let currentIndex = 0; // начало с первой плашки
+let panels=Array.from(document.querySelectorAll('.panel'));
+let currentIndex=9; // старт на 10 плашке
+const counter=document.getElementById('counter');
 
-function getVisibleCount(){
-  return window.innerWidth <= 600 ? 3 : 5;
-}
-let visibleCount = getVisibleCount();
+function getVisibleCount(){return window.innerWidth<=600?3:5;}
+let visibleCount=getVisibleCount();
 
 function clearPanelStyle(p){
-  p.style.boxShadow = '';
-  const titleEl = p.querySelector('.panel-title');
-  if(titleEl){ titleEl.style.color=''; titleEl.style.textShadow=''; }
+  p.style.boxShadow='';
+  const t=p.querySelector('.panel-title');
+  if(t){t.style.color='';t.style.textShadow='';}
 }
 
 function updatePanels(){
-  visibleCount = getVisibleCount();
-  panels.forEach(p=>{ p.style.display='none'; clearPanelStyle(p); p.classList.remove('active'); });
-
+  visibleCount=getVisibleCount();
+  panels.forEach(p=>{p.style.display='none';clearPanelStyle(p);p.classList.remove('active');});
   for(let i=0;i<visibleCount;i++){
-    const idx = currentIndex + i;
-    if(idx < panels.length) panels[idx].style.display = 'block';
+    const idx=currentIndex+i;
+    if(idx<panels.length)panels[idx].style.display='block';
   }
-
-  const centerOffset = Math.floor(visibleCount/2);
-  const centerIndex = currentIndex + centerOffset;
-  if(centerIndex < panels.length){
-    const p = panels[centerIndex];
+  const centerOffset=Math.floor(visibleCount/2);
+  const centerIndex=currentIndex+centerOffset;
+  if(centerIndex<panels.length){
+    const p=panels[centerIndex];
     p.classList.add('active');
-    const col = p.dataset.color;
+    const col=p.dataset.color;
     if(col){
-      p.style.boxShadow = `0 0 30px ${col}, 0 0 60px ${col}33`;
-      const titleEl = p.querySelector('.panel-title');
-      if(titleEl){ titleEl.style.color=col; titleEl.style.textShadow=`0 0 8px ${col}, 0 0 18px ${col}`; }
-    } else { p.style.boxShadow='0 0 25px rgba(255,140,0,0.8)'; }
+      p.style.boxShadow=`0 0 30px ${col},0 0 60px ${col}33`;
+      const t=p.querySelector('.panel-title');
+      if(t){t.style.color=col;t.style.textShadow=`0 0 8px ${col},0 0 18px ${col}`;}
+    }
   }
-
-  // дизактивируем стрелки на краях
-  document.getElementById('prevBtn').style.opacity = currentIndex <= 0 ? '0.3' : '1';
-  document.getElementById('nextBtn').style.opacity = currentIndex >= panels.length - visibleCount ? '0.3' : '1';
+  counter.textContent=`${Math.min(centerIndex+1,panels.length)}/${panels.length}`;
 }
 
-document.getElementById('prevBtn').onclick = ()=>{
-  if(currentIndex > 0){
-    currentIndex--;
-    updatePanels();
-  }
+document.getElementById('prevBtn').onclick=()=>{
+  if(currentIndex>0){currentIndex--;updatePanels();}
 };
-document.getElementById('nextBtn').onclick = ()=>{
-  if(currentIndex < panels.length - visibleCount){
-    currentIndex++;
-    updatePanels();
-  }
+document.getElementById('nextBtn').onclick=()=>{
+  if(currentIndex+visibleCount<panels.length){currentIndex++;updatePanels();}
 };
 
-topPanels.addEventListener('click', (e)=>{
-  const clicked = e.target.closest('.panel');
-  if(!clicked) return;
-  const idx = panels.indexOf(clicked);
-  if(idx === -1) return;
-  const centerOffset = Math.floor(getVisibleCount()/2);
-  currentIndex = Math.min(Math.max(idx - centerOffset, 0), panels.length - visibleCount);
-  updatePanels();
+window.addEventListener('resize',updatePanels);
+updatePanels();
+
+// ===== регистрация / вход =====
+function toggleEye(inputId,iconId){
+  const input=document.getElementById(inputId);
+  const icon=document.getElementById(iconId);
+  icon.addEventListener('click',()=>{
+    if(input.type==='password'){input.type='text';icon.style.backgroundImage="url('icons/eye-open.png')";}
+    else{input.type='password';icon.style.backgroundImage="url('icons/eye-closed.png')";}
+  });
+}
+toggleEye('login_password','login_eye');
+toggleEye('reg_password','reg_eye1');
+toggleEye('reg_repeat','reg_eye2');
+
+function loadUsers(){return JSON.parse(localStorage.getItem('users')||'[]');}
+function saveUsers(u){localStorage.setItem('users',JSON.stringify(u));}
+function setCurrentUser(u){localStorage.setItem('user',JSON.stringify(u));}
+function getCurrentUser(){return JSON.parse(localStorage.getItem('user')||'null');}
+
+const regForm=document.getElementById('registerForm');
+const loginForm=document.getElementById('loginForm');
+const regError=document.getElementById('regError');
+const loginError=document.getElementById('loginError');
+const authModal=document.getElementById('authModal');
+const registerBtn=document.getElementById('registerBtn');
+const avatarBtn=document.getElementById('avatarBtn');
+const profilePanel=document.getElementById('profilePanel');
+const profileName=document.getElementById('profileName');
+const profileAvatar=document.getElementById('profileAvatar');
+const logoutBtn=document.getElementById('logoutBtn');
+const tabLogin=document.getElementById('tabLogin');
+const tabRegister=document.getElementById('tabRegister');
+
+// ===== переключение вкладок вход / регистрация =====
+tabLogin.onclick=()=>{
+  tabLogin.classList.add('active');
+  tabRegister.classList.remove('active');
+  loginForm.style.display='block';
+  regForm.style.display='none';
+  regError.style.display='none';
+  loginError.style.display='none';
+};
+tabRegister.onclick=()=>{
+  tabRegister.classList.add('active');
+  tabLogin.classList.remove('active');
+  loginForm.style.display='none';
+  regForm.style.display='block';
+  regError.style.display='none';
+  loginError.style.display='none';
+};
+
+// ===== открытие/закрытие модалки =====
+registerBtn.addEventListener('click',()=>{
+  authModal.classList.toggle('visible');
+});
+window.addEventListener('click',e=>{
+  if(e.target===authModal)authModal.classList.remove('visible');
 });
 
-updatePanels();
-window.addEventListener('resize', ()=>{updatePanels();});
-</script>
-</body>
-</html>
+// ===== регистрация =====
+regForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const users=loadUsers();
+  const name=document.getElementById('reg_username').value.trim();
+  const pass=document.getElementById('reg_password').value;
+  const rep=document.getElementById('reg_repeat').value;
+
+  if(pass!==rep){
+    regError.textContent='Пароли не совпадают';
+    regError.style.display='block';
+    return;
+  }
+  if(users.find(u=>u.name===name)){
+    regError.textContent='Такой пользователь уже есть';
+    regError.style.display='block';
+    return;
+  }
+
+  const newUser={name,pass,avatar:'img/default-avatar.png'};
+  users.push(newUser);
+  saveUsers(users);
+  setCurrentUser(newUser);
+  regError.style.display='none';
+  authModal.classList.remove('visible');
+  updateProfileUI();
+});
+
+// ===== вход =====
+loginForm.addEventListener('submit',e=>{
+  e.preventDefault();
+  const users=loadUsers();
+  const name=document.getElementById('login_username').value.trim();
+  const pass=document.getElementById('login_password').value;
+  const found=users.find(u=>u.name===name && u.pass===pass);
+  if(!found){
+    loginError.textContent='Неверный ник или пароль';
+    loginError.style.display='block';
+    return;
+  }
+  setCurrentUser(found);
+  loginError.style.display='none';
+  authModal.classList.remove('visible');
+  updateProfileUI();
+});
+
+// ===== обновление интерфейса профиля =====
+function updateProfileUI(){
+  const user=getCurrentUser();
+  if(user){
+    registerBtn.style.display='none';
+    avatarBtn.style.display='block';
+    profileName.textContent=user.name;
+    profileAvatar.style.backgroundImage=`url('${user.avatar}')`;
+  } else {
+    registerBtn.style.display='block';
+    avatarBtn.style.display='none';
+    profilePanel.classList.remove('visible');
+  }
+}
+
+// ===== открытие панели профиля =====
+avatarBtn.addEventListener('click',()=>{
+  profilePanel.classList.toggle('visible');
+});
+
+// ===== выход =====
+logoutBtn.addEventListener('click',()=>{
+  localStorage.removeItem('user');
+  updateProfileUI();
+});
+
+// ===== запуск =====
+updateProfileUI();
+
+// ===== ESC закрывает модалки =====
+window.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){
+    authModal.classList.remove('visible');
+    profilePanel.classList.remove('visible');
+  }
+});

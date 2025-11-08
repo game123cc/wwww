@@ -14,7 +14,8 @@ body {
   color: white;
   overflow-x: hidden;
 }
-/* ===== ВЕРХ ===== */
+
+/* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
 .top-bar {
   position: absolute;
   top: 12px;
@@ -51,6 +52,7 @@ body {
   transform: scale(1.05);
   filter: drop-shadow(0 0 12px rgba(255, 200, 50, 0.8));
 }
+
 /* ====== МОДАЛКА ====== */
 .auth-modal {
   position: fixed;
@@ -106,6 +108,7 @@ body {
   font-weight: 700;
 }
 .auth-error { color: #ff8080; font-size: 13px; margin: 8px 0; display: none; text-align: center; }
+
 /* ===== Профиль ===== */
 .profile-panel {
   position: fixed;
@@ -135,6 +138,7 @@ body {
   margin: 6px 4px;
 }
 .profile-btn:hover { background: rgba(255,255,255,0.16); }
+
 /* ===== Видео ===== */
 .video-frame{
   position:relative;
@@ -169,6 +173,7 @@ body {
   transition:transform 0.2s ease, background-color 0.3s ease;
 }
 .sound-btn:hover{transform:scale(1.08);background-color:rgba(255,255,255,0.85);}
+
 /* ===== ПАНЕЛИ ===== */
 .top-panels{
   position:relative;
@@ -202,6 +207,7 @@ body {
   opacity:1;
   box-shadow:0 0 25px rgba(255,140,0,0.8);
 }
+
 /* ===== Названия ===== */
 .panel-title {
   position: absolute;
@@ -220,9 +226,11 @@ body {
   transition: opacity 0.4s ease;
 }
 .panel.active .panel-title { opacity: 1; }
+
 .controls{text-align:center;margin-top:-20px;}
 .arrow{display:inline-block;font-size:34px;color:#fff;cursor:pointer;user-select:none;background:none;padding:20px 70px;margin:0 15px;border-radius:40px;transition:0.3s ease;border:none;}
 .arrow:hover{background:rgba(255,255,255,0.1);transform:scale(1.15);}
+.counter{display:none;}
 @media(max-width:600px){
   .video-frame{height:360px;width:100%;border-radius:0;}
   .panel{width:120px;height:150px;}
@@ -240,27 +248,35 @@ body {
   <div class="avatar-icon" id="avatarBtn" style="background-image:url('img/default-avatar.png');"></div>
 </div>
 
-<!-- ===== МОДАЛКА / ПРОФИЛЬ / ВИДЕО — без изменений ===== -->
-<!-- (содержимое то же, что у тебя выше, опущено ради краткости) -->
+<!-- ===== ПРОФИЛЬ, МОДАЛКИ и ВИДЕО опущены для краткости (без изменений) ===== -->
+<!-- ... -->
 
 <!-- ===== ПАНЕЛИ ===== -->
 <div class="top-panels" id="topPanels"></div>
+
 <div class="controls">
   <span class="arrow left" id="prevBtn">◄</span>
   <span class="arrow right" id="nextBtn">►</span>
 </div>
 
 <script>
-// ===== ВИДЕО =====
+// ===== звук =====
 const video=document.getElementById('mainVideo');
-const soundBtn=document.getElementById('soundBtn');
-soundBtn?.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
+if(video){
+  const soundBtn=document.getElementById('soundBtn');
+  soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
+}
 
-// ===== ПАНЕЛИ =====
+// ===== панели =====
 const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ"];
-const colorMap={"СОПРАНО":"#FF4DFF","ГОЛЯК":"#00E5FF","ИГРА ПРЕСТОЛОВ":"#FFD166","МОЛОКСОСЫ":"#7CFFB2","БЕССТЫЖИЕ":"#FF6B6B"};
 const topPanels=document.getElementById('topPanels');
-
+const colorMap = {
+  "СОПРАНО": "#FF4DFF",
+  "ГОЛЯК": "#00E5FF",
+  "ИГРА ПРЕСТОЛОВ": "#FFD166",
+  "МОЛОКСОСЫ": "#7CFFB2",
+  "БЕССТЫЖИЕ": "#FF6B6B"
+};
 for(let i=1;i<=20;i++){
   const p=document.createElement('div');
   p.className='panel';
@@ -270,44 +286,78 @@ for(let i=1;i<=20;i++){
     t.className='panel-title';
     t.textContent=titles[i-1];
     p.appendChild(t);
-    p.dataset.color=colorMap[titles[i-1]]||'#fff';
-  }
+    p.dataset.title = titles[i-1];
+    p.dataset.color = colorMap[titles[i-1]] || '#ffffff';
+  } else { p.dataset.title=''; p.dataset.color=''; }
   topPanels.appendChild(p);
 }
 
-let panels=[...document.querySelectorAll('.panel')];
-let currentIndex=0; // первая по центру
+let panels = Array.from(document.querySelectorAll('.panel'));
+let currentIndex = 0; // начало с первой плашки
 
-function getVisibleCount(){return window.innerWidth<=600?3:5;}
-let visibleCount=getVisibleCount();
+function getVisibleCount(){
+  return window.innerWidth <= 600 ? 3 : 5;
+}
+let visibleCount = getVisibleCount();
 
-function updatePanels(){
-  visibleCount=getVisibleCount();
-  panels.forEach(p=>{p.style.display='none';p.classList.remove('active');p.style.boxShadow='';});
-  for(let i=0;i<visibleCount;i++){
-    const idx=currentIndex+i;
-    if(idx<panels.length) panels[idx].style.display='block';
-  }
-  const center=currentIndex+Math.floor(visibleCount/2);
-  if(center<panels.length){
-    const p=panels[center];
-    p.classList.add('active');
-    const col=p.dataset.color;
-    if(col) p.style.boxShadow=`0 0 30px ${col},0 0 60px ${col}33`;
-  }
-  document.getElementById('prevBtn').style.opacity=currentIndex<=0?'0.3':'1';
-  document.getElementById('nextBtn').style.opacity=currentIndex>=panels.length-visibleCount?'0.3':'1';
+function clearPanelStyle(p){
+  p.style.boxShadow = '';
+  const titleEl = p.querySelector('.panel-title');
+  if(titleEl){ titleEl.style.color=''; titleEl.style.textShadow=''; }
 }
 
-document.getElementById('prevBtn').onclick=()=>{
-  if(currentIndex>0){currentIndex--;updatePanels();}
+function updatePanels(){
+  visibleCount = getVisibleCount();
+  panels.forEach(p=>{ p.style.display='none'; clearPanelStyle(p); p.classList.remove('active'); });
+
+  for(let i=0;i<visibleCount;i++){
+    const idx = currentIndex + i;
+    if(idx < panels.length) panels[idx].style.display = 'block';
+  }
+
+  const centerOffset = Math.floor(visibleCount/2);
+  const centerIndex = currentIndex + centerOffset;
+  if(centerIndex < panels.length){
+    const p = panels[centerIndex];
+    p.classList.add('active');
+    const col = p.dataset.color;
+    if(col){
+      p.style.boxShadow = `0 0 30px ${col}, 0 0 60px ${col}33`;
+      const titleEl = p.querySelector('.panel-title');
+      if(titleEl){ titleEl.style.color=col; titleEl.style.textShadow=`0 0 8px ${col}, 0 0 18px ${col}`; }
+    } else { p.style.boxShadow='0 0 25px rgba(255,140,0,0.8)'; }
+  }
+
+  // дизактивируем стрелки на краях
+  document.getElementById('prevBtn').style.opacity = currentIndex <= 0 ? '0.3' : '1';
+  document.getElementById('nextBtn').style.opacity = currentIndex >= panels.length - visibleCount ? '0.3' : '1';
+}
+
+document.getElementById('prevBtn').onclick = ()=>{
+  if(currentIndex > 0){
+    currentIndex--;
+    updatePanels();
+  }
 };
-document.getElementById('nextBtn').onclick=()=>{
-  if(currentIndex<panels.length-visibleCount){currentIndex++;updatePanels();}
+document.getElementById('nextBtn').onclick = ()=>{
+  if(currentIndex < panels.length - visibleCount){
+    currentIndex++;
+    updatePanels();
+  }
 };
 
+topPanels.addEventListener('click', (e)=>{
+  const clicked = e.target.closest('.panel');
+  if(!clicked) return;
+  const idx = panels.indexOf(clicked);
+  if(idx === -1) return;
+  const centerOffset = Math.floor(getVisibleCount()/2);
+  currentIndex = Math.min(Math.max(idx - centerOffset, 0), panels.length - visibleCount);
+  updatePanels();
+});
+
 updatePanels();
-window.addEventListener('resize',updatePanels);
+window.addEventListener('resize', ()=>{updatePanels();});
 </script>
 </body>
 </html>

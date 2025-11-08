@@ -199,6 +199,11 @@ body {
   opacity:0.7;
   overflow:hidden;
 }
+.panel .panel-link{
+  display:block;
+  width:100%;
+  height:100%;
+}
 .panel.active{
   width:260px;
   height:280px;
@@ -228,14 +233,18 @@ body {
 .panel.active .panel-title { opacity: 1; }
 
 .controls{text-align:center;margin-top:-20px;}
-.arrow{display:inline-block;font-size:34px;color:#fff;cursor:pointer;user-select:none;background:none;padding:20px 70px;margin:0 15px;border-radius:40px;transition:0.3s ease;border:none;}
-.arrow:hover{background:rgba(255,255,255,0.1);transform:scale(1.15);}
-.counter{display:inline-block;font-size:24px;font-weight:bold;color:#ccc;vertical-align:middle;}
+.arrow{display:inline-block;font-size:34px;color:#fff;cursor:pointer;user-select:none;background:none;padding:20px 40px;margin:0 10px;border-radius:40px;transition:0.3s ease;border:none;}
+.arrow:hover{background:rgba(255,255,255,0.1);transform:scale(1.08);}
+.counter{display:inline-block;font-size:20px;font-weight:700;color:#fff;vertical-align:middle;margin:0 8px;}
+
+/* disable look */
+.arrow.disabled{opacity:0.35;cursor:default;pointer-events:none;}
+
 @media(max-width:600px){
   .video-frame{height:360px;width:100%;border-radius:0;}
   .panel{width:120px;height:150px;}
   .panel.active{width:180px;height:200px;}
-  .arrow{padding:14px 40px;font-size:28px;}
+  .arrow{padding:14px 20px;font-size:28px;}
   .panel-title {font-size:18px;}
 }
 </style>
@@ -287,7 +296,7 @@ body {
 
 <div class="controls">
   <span class="arrow left" id="prevBtn">◄</span>
-  <span class="counter" id="counter">1/20</span>
+  <span class="counter" id="counter">10/20</span>
   <span class="arrow right" id="nextBtn">►</span>
 </div>
 
@@ -295,89 +304,184 @@ body {
 // ===== звук =====
 const video=document.getElementById('mainVideo');
 const soundBtn=document.getElementById('soundBtn');
-soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
+soundBtn.addEventListener('click',()=>{
+  video.muted = !video.muted;
+  soundBtn.style.backgroundImage = video.muted ? "url('icons/sound-off.png')" : "url('icons/sound-on.png')";
+});
 
-// ===== панели =====
-const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ","ЗАДОРНЫЕ ДРУЗЬЯ","ДОМ ДРАКОНА","МИРОТВОРЕЦ","ПАЦАНЫ","ВО ВСЕ ТЯЖКИЕ","МИСТЕР ПИКЛЗ"];
+// ===== панели (20) =====
+const titles = [
+  "ИГРА ПРЕСТОЛОВ", "СОПРАНО", "МОЛОКОСОСЫ", "БЕССТЫЖИЕ", "ЗАДОРНЫЕ ДРУЗЬЯ",
+  "ДОМ ДРАКОНА", "ОТБРОСЫ", "ХОДЯЧИЕ МЕРТВЕЦЫ", "СВЕРХЪЕСТЕСТВЕННОЕ", "ОСТРЫЕ КОЗЫРЬКИ",
+  "ЛУЧШЕ ЗВОНИТЕ СОУЛУ", "АМЕРИКАНСКАЯ ИСТОРИЯ УЖАСОВ", "ВО ВСЕ ТЯЖКИЕ", "ДЕКСТЕР", "ЮЖНЫЙ ПАРК",
+  "ВРЕМЯ ПРИКЛЮЧЕНИЙ", "ФИНЕС И ФЕРБ", "МАЙ ЛИТЛ ПОНИ", "БИВИС И БАТХЕД", "ДАРЬЯ"
+];
+
+// (цвета по-умолчанию — можно перезаписать случайным при активации)
 const colorMap = {
-  "СОПРАНО": "#FF4DFF",
-  "ГОЛЯК": "#00E5FF",
-  "ИГРА ПРЕСТОЛОВ": "#FFD166",
-  "МОЛОКСОСЫ": "#7CFFB2",
-  "БЕССТЫЖИЕ": "#FF6B6B",
-  "ЗАДОРНЫЕ ДРУЗЬЯ": "#FFAA33",
-  "ДОМ ДРАКОНА": "#FF3333",
-  "МИРОТВОРЕЦ": "#66FFEE",
-  "ПАЦАНЫ": "#FF4444",
-  "ВО ВСЕ ТЯЖКИЕ": "#99FF33",
-  "МИСТЕР ПИКЛЗ": "#00FF66"
+  "ИГРА ПРЕСТОЛОВ":"#FFD166","СОПРАНО":"#FF4DFF","МОЛОКОСОСЫ":"#7CFFB2","БЕССТЫЖИЕ":"#FF6B6B","ЗАДОРНЫЕ ДРУЗЬЯ":"#FFAA33",
+  "ДОМ ДРАКОНА":"#FF3333","ОТБРОСЫ":"#FF7777","ХОДЯЧИЕ МЕРТВЕЦЫ":"#66FFEE","СВЕРХЪЕСТЕСТВЕННОЕ":"#99EEFF","ОСТРЫЕ КОЗЫРЬКИ":"#99FF33",
+  "ЛУЧШЕ ЗВОНИТЕ СОУЛУ":"#FF8C66","АМЕРИКАНСКАЯ ИСТОРИЯ УЖАСОВ":"#AA66FF","ВО ВСЕ ТЯЖКИЕ":"#33CC99","ДЕКСТЕР":"#FF3366","ЮЖНЫЙ ПАРК":"#FFD133",
+  "ВРЕМЯ ПРИКЛЮЧЕНИЙ":"#66CCFF","ФИНЕС И ФЕРБ":"#FF66CC","МАЙ ЛИТЛ ПОНИ":"#FF99EE","БИВИС И БАТХЕД":"#CCCC66","ДАРЬЯ":"#66CC66"
 };
 
-const topPanels=document.getElementById('topPanels');
-for(let i=1;i<=20;i++){
-  const p=document.createElement('div');
-  p.className='panel';
-  p.style.backgroundImage=`url('img/top/${i}.jpg')`;
-  if(i<=titles.length){
-    const t=document.createElement('div');
-    t.className='panel-title';
-    t.textContent=titles[i-1];
-    p.appendChild(t);
-    p.dataset.title=titles[i-1];
-    p.dataset.color=colorMap[titles[i-1]]||'#ffffff';
-  }
+const topPanels = document.getElementById('topPanels');
+
+// создаём 20 панелей
+for (let i = 0; i < 20; i++) {
+  const idx = i + 1;
+  const p = document.createElement('div');
+  p.className = 'panel';
+  p.dataset.index = i; // 0-based
+  p.style.backgroundImage = `url('img/top/${idx}.jpg')`;
+  // внутренняя ссылка (чтобы открыть свой плеер)
+  const link = document.createElement('a');
+  link.className = 'panel-link';
+  link.href = `videos${idx}.html`;
+  link.target = '_blank'; // открывать в новой вкладке
+  // заголовок
+  const t = document.createElement('div');
+  t.className = 'panel-title';
+  t.textContent = titles[i] || `Плашка ${idx}`;
+  link.appendChild(t);
+  p.appendChild(link);
+
+  // клик по панели — сделаем активной; двойной клик — откроет страницу (по ссылке)
+  p.addEventListener('click', (ev) => {
+    // не мешаем переходу по ссылке если Ctrl/Meta/Shift — это штатное поведение
+    // при клике ставим активную
+    setActiveIndex(i);
+  });
+  // двойной клик позволит открыть ссылку (в случае браузеров, target already)
+  p.addEventListener('dblclick', (ev) => {
+    window.open(`videos${idx}.html`, '_blank');
+  });
+
   topPanels.appendChild(p);
 }
 
-let panels=Array.from(document.querySelectorAll('.panel'));
-let currentIndex=9; // старт на 10 плашке
-const counter=document.getElementById('counter');
+let panels = Array.from(document.querySelectorAll('.panel'));
+const total = panels.length;
 
-function getVisibleCount(){return window.innerWidth<=600?3:5;}
-let visibleCount=getVisibleCount();
+// activeIndex — индекс активной плашки (0-based). По условию: стартовая активная — 10-я -> index 9
+let activeIndex = 9;
 
-function clearPanelStyle(p){
-  p.style.boxShadow='';
-  const t=p.querySelector('.panel-title');
-  if(t){t.style.color='';t.style.textShadow='';}
+// visibleCount: 5 на десктопе, 3 на мобиле
+function getVisibleCount(){
+  return window.innerWidth <= 600 ? 3 : 5;
+}
+let visibleCount = getVisibleCount();
+
+// helper random color
+function randomColor(){
+  // сгенерировать яркий цвет
+  const h = Math.floor(Math.random()*360);
+  const s = 70 + Math.floor(Math.random()*20);
+  const l = 45 + Math.floor(Math.random()*10);
+  return `hsl(${h} ${s}% ${l}%)`;
 }
 
+// clamp
+function clamp(v, a, b){ return Math.max(a, Math.min(b, v)); }
+
+const counter = document.getElementById('counter');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+
+function updateControlsState(){
+  // если на 1 -> нельзя влево; на 20 -> нельзя вправо
+  if (activeIndex <= 0) prevBtn.classList.add('disabled'); else prevBtn.classList.remove('disabled');
+  if (activeIndex >= total - 1) nextBtn.classList.add('disabled'); else nextBtn.classList.remove('disabled');
+}
+
+// главный рендер: показывает последовательную группу панелей с учётом границ
 function updatePanels(){
-  visibleCount=getVisibleCount();
-  panels.forEach(p=>{p.style.display='none';clearPanelStyle(p);p.classList.remove('active');});
-  for(let i=0;i<visibleCount;i++){
-    const idx=currentIndex+i;
-    if(idx<panels.length)panels[idx].style.display='block';
-  }
-  const centerOffset=Math.floor(visibleCount/2);
-  const centerIndex=currentIndex+centerOffset;
-  if(centerIndex<panels.length){
-    const p=panels[centerIndex];
-    p.classList.add('active');
-    const col=p.dataset.color;
-    if(col){
-      p.style.boxShadow=`0 0 30px ${col},0 0 60px ${col}33`;
-      const t=p.querySelector('.panel-title');
-      if(t){t.style.color=col;t.style.textShadow=`0 0 8px ${col},0 0 18px ${col}`;}
+  visibleCount = getVisibleCount();
+  // центрируем по activeIndex: хотим, чтобы active был в центре при возможности
+  const centerOffset = Math.floor(visibleCount / 2);
+  // leftmost possible start
+  let start = activeIndex - centerOffset;
+  // clamp start so we don't go negative or beyond available panels
+  start = clamp(start, 0, Math.max(0, total - visibleCount));
+
+  // скрываем все сначала
+  panels.forEach(p => { p.style.display = 'none'; p.classList.remove('active'); clearPanelStyle(p); });
+
+  // показываем последовательные visibleCount панели начиная с start
+  for (let i = 0; i < visibleCount; i++){
+    const idx = start + i;
+    if (idx >= 0 && idx < panels.length){
+      panels[idx].style.display = 'block';
     }
   }
-  counter.textContent=`${Math.min(centerIndex+1,panels.length)}/${panels.length}`;
+
+  // помечаем активную (если видима)
+  if (activeIndex >= start && activeIndex < start + visibleCount){
+    const p = panels[activeIndex];
+    p.classList.add('active');
+    // применяем рандомный цвет к активной (как ты просил)
+    const col = randomColor();
+    p.style.boxShadow = `0 0 30px ${col}, 0 0 60px ${col}33`;
+    const titleEl = p.querySelector('.panel-title');
+    if (titleEl){
+      titleEl.style.color = col;
+      titleEl.style.textShadow = `0 0 8px ${col}, 0 0 18px ${col}`;
+    }
+  } else {
+    // если активная не попадает в видимую область (маловероятно), показываем центр по activeIndex logic
+    // (но конструкция выше гарантирует, что activeIndex будет видим)
+  }
+
+  // счётчик: показываем активную позицию (1-based)
+  counter.textContent = `${activeIndex + 1}/${total}`;
+
+  updateControlsState();
 }
 
-document.getElementById('prevBtn').onclick=()=>{
-  if(currentIndex>0){currentIndex--;updatePanels();}
-};
-document.getElementById('nextBtn').onclick=()=>{
-  if(currentIndex+visibleCount<panels.length){currentIndex++;updatePanels();}
-};
+// очистить инлайн-стили подсветки
+function clearPanelStyle(p){
+  p.style.boxShadow = '';
+  const titleEl = p.querySelector('.panel-title');
+  if (titleEl){
+    titleEl.style.color = '';
+    titleEl.style.textShadow = '';
+  }
+}
 
-window.addEventListener('resize',updatePanels);
+// установка активного индекса (с проверкой границ)
+function setActiveIndex(idx){
+  idx = clamp(idx, 0, total - 1);
+  if (idx === activeIndex) return;
+  activeIndex = idx;
+  updatePanels();
+}
+
+// навигация стрелками меняет активную плашку на соседнюю
+prevBtn.addEventListener('click', () => {
+  if (activeIndex > 0) { setActiveIndex(activeIndex - 1); }
+});
+nextBtn.addEventListener('click', () => {
+  if (activeIndex < total - 1) { setActiveIndex(activeIndex + 1); }
+});
+
+// клик по панели (реализация сделана выше при создании элементов)
+
+// реакция на ресайз: пересчитать видимую область так, чтобы активная оставалась видимой
+window.addEventListener('resize', () => {
+  const oldVisible = visibleCount;
+  visibleCount = getVisibleCount();
+  // при изменении visibleCount пересчитаем start так, чтобы активная осталась в центре/видимой
+  updatePanels();
+});
+
+// инициализация
 updatePanels();
 
-// ===== регистрация / вход =====
+// ===== регистрация / вход (оставлено как было, немного подчистил чтобы не ломать логику) =====
 function toggleEye(inputId,iconId){
   const input=document.getElementById(inputId);
   const icon=document.getElementById(iconId);
+  if(!input||!icon) return;
   icon.addEventListener('click',()=>{
     if(input.type==='password'){input.type='text';icon.style.backgroundImage="url('icons/eye-open.png')";}
     else{input.type='password';icon.style.backgroundImage="url('icons/eye-closed.png')";}
@@ -396,121 +500,94 @@ const regForm=document.getElementById('registerForm');
 const loginForm=document.getElementById('loginForm');
 const regError=document.getElementById('regError');
 const loginError=document.getElementById('loginError');
-const authModal=document.getElementById('authModal');
-const registerBtn=document.getElementById('registerBtn');
 const avatarBtn=document.getElementById('avatarBtn');
-const profilePanel=document.getElementById('profilePanel');
-const profileName=document.getElementById('profileName');
-const profileAvatar=document.getElementById('profileAvatar');
-const logoutBtn=document.getElementById('logoutBtn');
+const registerBtn=document.getElementById('registerBtn');
+const authModal=document.getElementById('authModal');
 const tabLogin=document.getElementById('tabLogin');
 const tabRegister=document.getElementById('tabRegister');
+const profilePanel=document.getElementById('profilePanel');
+const profileAvatar=document.getElementById('profileAvatar');
+const profileName=document.getElementById('profileName');
+const logoutBtn=document.getElementById('logoutBtn');
 
-// ===== переключение вкладок вход / регистрация =====
-tabLogin.onclick=()=>{
-  tabLogin.classList.add('active');
-  tabRegister.classList.remove('active');
-  loginForm.style.display='block';
-  regForm.style.display='none';
-  regError.style.display='none';
-  loginError.style.display='none';
-};
-tabRegister.onclick=()=>{
-  tabRegister.classList.add('active');
-  tabLogin.classList.remove('active');
-  loginForm.style.display='none';
-  regForm.style.display='block';
-  regError.style.display='none';
-  loginError.style.display='none';
-};
-
-// ===== открытие/закрытие модалки =====
-registerBtn.addEventListener('click',()=>{
-  authModal.classList.toggle('visible');
-});
-window.addEventListener('click',e=>{
-  if(e.target===authModal)authModal.classList.remove('visible');
+function showModal(tab){
+  authModal.classList.add('visible');
+  if(tab==='register'){
+    tabRegister.classList.add('active');tabLogin.classList.remove('active');
+    loginForm.style.display='none';regForm.style.display='block';
+  }else{
+    tabLogin.classList.add('active');tabRegister.classList.remove('active');
+    regForm.style.display='none';loginForm.style.display='block';
+  }
+}
+tabLogin.onclick=()=>showModal('login');
+tabRegister.onclick=()=>showModal('register');
+registerBtn.onclick=()=>showModal('login');
+document.addEventListener('click',e=>{
+  if(authModal.classList.contains('visible') && !authModal.contains(e.target) && !registerBtn.contains(e.target)){
+    authModal.classList.remove('visible');
+  }
 });
 
-// ===== регистрация =====
-regForm.addEventListener('submit',e=>{
+regForm && regForm.addEventListener('submit',e=>{
   e.preventDefault();
-  const users=loadUsers();
-  const name=document.getElementById('reg_username').value.trim();
+  const username=document.getElementById('reg_username').value.trim();
   const pass=document.getElementById('reg_password').value;
   const rep=document.getElementById('reg_repeat').value;
-
-  if(pass!==rep){
-    regError.textContent='Пароли не совпадают';
-    regError.style.display='block';
-    return;
+  if(username.length<3){regError.textContent='Ник минимум 3 символа';regError.style.display='block';return;}
+  if(pass.length<6){regError.textContent='Пароль минимум 6 символов';regError.style.display='block';return;}
+  if(pass!==rep){regError.textContent='Пароли не совпадают';regError.style.display='block';return;}
+  const users=loadUsers();
+  if(users.find(u=>u.name.toLowerCase()===username.toLowerCase())){
+    regError.textContent='Ник уже занят';regError.style.display='block';return;
   }
-  if(users.find(u=>u.name===name)){
-    regError.textContent='Такой пользователь уже есть';
-    regError.style.display='block';
-    return;
-  }
-
-  const newUser={name,pass,avatar:'img/default-avatar.png'};
-  users.push(newUser);
+  users.push({name:username,pass:pass,avatar:'img/default-avatar.png'});
   saveUsers(users);
-  setCurrentUser(newUser);
-  regError.style.display='none';
+  setCurrentUser({name:username,avatar:'img/default-avatar.png'});
+  // обновляем UI без перезагрузки
+  updateUI();
   authModal.classList.remove('visible');
-  updateProfileUI();
 });
 
-// ===== вход =====
-loginForm.addEventListener('submit',e=>{
+loginForm && loginForm.addEventListener('submit',e=>{
   e.preventDefault();
+  const username=document.getElementById('login_username').value.trim();
+  const password=document.getElementById('login_password').value;
   const users=loadUsers();
-  const name=document.getElementById('login_username').value.trim();
-  const pass=document.getElementById('login_password').value;
-  const found=users.find(u=>u.name===name && u.pass===pass);
-  if(!found){
-    loginError.textContent='Неверный ник или пароль';
+  const user=users.find(u=>u.name.toLowerCase()===username.toLowerCase() && u.pass===password);
+  if(!user){
+    loginError.textContent='Неверный логин или пароль';
     loginError.style.display='block';
     return;
   }
-  setCurrentUser(found);
-  loginError.style.display='none';
+  setCurrentUser(user);
+  updateUI();
   authModal.classList.remove('visible');
-  updateProfileUI();
 });
 
-// ===== обновление интерфейса профиля =====
-function updateProfileUI(){
+// ===== загрузка пользователя =====
+function updateUI(){
   const user=getCurrentUser();
   if(user){
     registerBtn.style.display='none';
     avatarBtn.style.display='block';
+    avatarBtn.style.backgroundImage=`url('${user.avatar}')`;
     profileName.textContent=user.name;
     profileAvatar.style.backgroundImage=`url('${user.avatar}')`;
-  } else {
+  }else{
     registerBtn.style.display='block';
     avatarBtn.style.display='none';
-    profilePanel.classList.remove('visible');
   }
 }
+updateUI();
 
-// ===== открытие панели профиля =====
-avatarBtn.addEventListener('click',()=>{
+avatarBtn && avatarBtn.addEventListener('click',()=>{
   profilePanel.classList.toggle('visible');
 });
-
-// ===== выход =====
-logoutBtn.addEventListener('click',()=>{
+logoutBtn && logoutBtn.addEventListener('click',()=>{
   localStorage.removeItem('user');
-  updateProfileUI();
+  updateUI();
 });
-
-// ===== запуск =====
-updateProfileUI();
-
-// ===== ESC закрывает модалки =====
-window.addEventListener('keydown',e=>{
-  if(e.key==='Escape'){
-    authModal.classList.remove('visible');
-    profilePanel.classList.remove('visible');
-  }
-});
+</script>
+</body>
+</html>

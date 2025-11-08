@@ -291,17 +291,13 @@ body {
 </div>
 
 <script>
-// ===== звук =====
 const video=document.getElementById('mainVideo');
 const soundBtn=document.getElementById('soundBtn');
 soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
 
-// ===== панели =====
 const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКСОСЫ","БЕССТЫЖИЕ"];
 const topPanels=document.getElementById('topPanels');
 const panels=[];
-
-// создаем панели
 for(let i=1;i<=20;i++){
   const p=document.createElement('div');
   p.className='panel';
@@ -315,30 +311,19 @@ for(let i=1;i<=20;i++){
   panels.push(p);
   topPanels.appendChild(p);
 }
-
 let currentIndex=0;
-let visibleCount = window.innerWidth <= 600 ? 3 : 5; // 👈 вот добавление
-
-window.addEventListener('resize',()=>{ 
-  visibleCount = window.innerWidth <= 600 ? 3 : 5;
-  updatePanels();
-});
-
+let visibleCount = window.innerWidth <= 600 ? 3 : 5;
+window.addEventListener('resize',()=>{visibleCount=window.innerWidth<=600?3:5;updatePanels();});
 function updatePanels(){
   panels.forEach(p=>p.style.display='none');
-  for(let i=0;i<visibleCount;i++){
-    const idx=(currentIndex+i)%panels.length;
-    panels[idx].style.display='block';
-  }
+  for(let i=0;i<visibleCount;i++){const idx=(currentIndex+i)%panels.length;panels[idx].style.display='block';}
   const center=(currentIndex+Math.floor(visibleCount/2))%panels.length;
   panels.forEach((p,i)=>p.classList.toggle('active',i===center));
 }
-
 document.getElementById('prevBtn').onclick=()=>{currentIndex=(currentIndex-1+panels.length)%panels.length;updatePanels();};
 document.getElementById('nextBtn').onclick=()=>{currentIndex=(currentIndex+1)%panels.length;updatePanels();};
 updatePanels();
 
-// ===== регистрация и профиль =====
 function toggleEye(inputId,iconId){
   const input=document.getElementById(inputId);
   const icon=document.getElementById(iconId);
@@ -363,28 +348,18 @@ const authModal=document.getElementById('authModal');
 const tabLogin=document.getElementById('tabLogin');
 const tabRegister=document.getElementById('tabRegister');
 const profilePanel=document.getElementById('profilePanel');
-const profileAvatar=document.getElementById('profileAvatar');
 const profileName=document.getElementById('profileName');
 const logoutBtn=document.getElementById('logoutBtn');
 
 function showModal(tab){
   authModal.classList.add('visible');
-  if(tab==='register'){
-    tabRegister.classList.add('active');tabLogin.classList.remove('active');
-    loginForm.style.display='none';regForm.style.display='block';
-  }else{
-    tabLogin.classList.add('active');tabRegister.classList.remove('active');
-    regForm.style.display='none';loginForm.style.display='block';
-  }
+  if(tab==='register'){tabRegister.classList.add('active');tabLogin.classList.remove('active');loginForm.style.display='none';regForm.style.display='block';}
+  else{tabLogin.classList.add('active');tabRegister.classList.remove('active');regForm.style.display='none';loginForm.style.display='block';}
 }
 tabLogin.onclick=()=>showModal('login');
 tabRegister.onclick=()=>showModal('register');
 registerBtn.onclick=()=>showModal('login');
-document.addEventListener('click',e=>{
-  if(authModal.classList.contains('visible')&&!authModal.contains(e.target)&&!registerBtn.contains(e.target)){
-    authModal.classList.remove('visible');
-  }
-});
+document.addEventListener('click',e=>{if(authModal.classList.contains('visible')&&!authModal.contains(e.target)&&!registerBtn.contains(e.target)){authModal.classList.remove('visible');}});
 
 regForm.addEventListener('submit',e=>{
   e.preventDefault();
@@ -402,61 +377,33 @@ regForm.addEventListener('submit',e=>{
   location.reload();
 });
 
-lloginForm.addEventListener('submit', e => {
+loginForm.addEventListener('submit',e=>{
   e.preventDefault();
-  const username = document.getElementById('login_username').value.trim();
-  const pass = document.getElementById('login_password').value;
-  const users = loadUsers();
-
-  const user = users.find(u => u.name.toLowerCase() === username.toLowerCase() && u.pass === pass);
-  if (!user) {
-    loginError.textContent = 'Неверный ник или пароль';
-    loginError.style.display = 'block';
-    return;
-  }
-
-  setCurrentUser({ name: user.name, avatar: user.avatar });
+  const username=document.getElementById('login_username').value.trim();
+  const pass=document.getElementById('login_password').value;
+  const users=loadUsers();
+  const user=users.find(u=>u.name.toLowerCase()===username.toLowerCase()&&u.pass===pass);
+  if(!user){loginError.textContent='Неверный логин или пароль';loginError.style.display='block';return;}
+  setCurrentUser(user);
   location.reload();
 });
 
-// ===== отображение профиля =====
-function updateProfile() {
-  const user = getCurrentUser();
-  if (user) {
-    registerBtn.style.display = 'none';
-    avatarBtn.style.display = 'block';
-    avatarBtn.style.backgroundImage = `url('${user.avatar}')`;
-    profileName.textContent = user.name;
+function updateProfile(){
+  const user=getCurrentUser();
+  if(user){
+    registerBtn.style.display='none';
+    avatarBtn.style.display='block';
+    avatarBtn.style.backgroundImage=`url('${user.avatar}')`;
+    profileName.textContent=user.name;
   } else {
-    registerBtn.style.display = 'block';
-    avatarBtn.style.display = 'none';
+    registerBtn.style.display='block';
+    avatarBtn.style.display='none';
   }
 }
-
 updateProfile();
 
-// ===== панель профиля =====
-avatarBtn.onclick = () => {
-  profilePanel.classList.toggle('visible');
-};
-document.addEventListener('click', e => {
-  if (!profilePanel.contains(e.target) && !avatarBtn.contains(e.target)) {
-    profilePanel.classList.remove('visible');
-  }
-});
-
-// ===== выход =====
-logoutBtn.onclick = () => {
-  localStorage.removeItem('user');
-  location.reload();
-};
-
-// ===== адаптация при загрузке =====
-window.addEventListener('load', () => {
-  visibleCount = window.innerWidth <= 600 ? 3 : 5;
-  updatePanels();
-});
+avatarBtn.onclick=()=>profilePanel.classList.toggle('visible');
+logoutBtn.onclick=()=>{localStorage.removeItem('user');location.reload();};
 </script>
 </body>
 </html>
-

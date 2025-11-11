@@ -1,0 +1,2326 @@
+<!DOCTYPE html>
+
+<html lang="ru">
+
+<head>
+
+<meta charset="UTF-8" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<title>Набросок коллекций</title>
+
+<style>
+
+:root { --accent: rgba(255,255,255,0.12); }
+
+/* Отключение неоновых полос на фоне */
+body::before, body::after { content: none !important; background: none !important; animation: none !important; }
+
+/* ===== Блок информации под стрелками ===== */
+.info-block{
+  width:90%;
+  max-width:1300px;
+  margin:14px auto 30px;
+  display:flex;
+  flex-direction: row;
+  gap:16px;
+  align-items:flex-start;
+  background: rgba(255,255,255,0.06);
+  border-radius:12px;
+  padding:12px;
+  backdrop-filter: blur(8px);
+}
+.info-poster{
+  width:170px;
+  aspect-ratio: 2/3;
+  border-radius:10px;
+  object-fit:cover;
+  background:#0e0e0e;
+  flex:0 0 auto;
+  display:block;
+}
+.info-content{flex:1; min-width:0;}
+.info-title{font-weight:800; margin:2px 0 8px; font-size:18px; letter-spacing:.5px; text-transform:uppercase;}
+.info-desc{font-size:14px; line-height:1.45; color: rgba(255,255,255,0.9); white-space:pre-line;}
+@media(max-width:600px){
+  .info-block{flex-direction:column; align-items:center;}
+  .info-poster{width:60%; max-width:220px; margin: 0 auto;}
+}
+
+/* Нижняя широкая полоса с кнопкой Telegram */
+.bottom-bar{
+  width:100%;
+  margin:22px 0 0;
+  padding:14px 0;
+  background: rgba(255,255,255,0.08);
+  border-top: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  display:flex;
+  justify-content:center;
+  position: relative;
+  z-index: 10;
+}
+.bottom-btn{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:64px;height:64px;border-radius:999px;border:none;
+  background: rgba(48,164,255,0.28); color:#bfe2ff; text-decoration:none;
+}
+.bottom-btn img{width:100%;height:100%;display:block;object-fit:contain;border-radius:999px;}
+
+/* ===== Мобильная компоновка ===== */
+@media(max-width:600px){
+  .top-bar{height:56px; width:94%; padding-left:14px; padding-right:14px; border-radius:10px;}
+  .register-icon,.avatar-icon,.search-icon{width:44px;height:44px;}
+  .search-input{max-width:70%; height:40px;}
+  .video-frame{height:300px; width:100%; border-radius:10px;}
+  .category-bar{width:94%; gap:8px; margin-bottom:12px;}
+  .category-btn{padding:10px 14px; font-size:15px; border-radius:10px;}
+  .top-panels{gap:16px; margin:30px auto 18px;}
+  .panel{width:96px; height:154px;}
+  .panel.active{width:120px; height:200px;}
+  .panel-title{font-size:14px; padding:6px 6px 8px;}
+  .controls{margin-top:-10px;}
+  .arrow{padding:12px 28px; font-size:26px;}
+  .counter{font-size:16px;}
+  .info-block{width:94%; margin:12px auto 18px; padding:10px;}
+  .info-poster{width:120px;}
+  .info-title{font-size:16px;}
+  .info-desc{font-size:13px;}
+  .bottom-bar{padding:10px 0;}
+  .bottom-btn{width:52px; height:52px;}
+}
+
+@media(max-width:480px){
+  .panel{width:88px; height:140px;}
+  .panel.active{width:110px; height:184px;}
+  .panel-title{font-size:13px;}
+  .arrow{padding:10px 22px; font-size:24px;}
+  .counter{font-size:14px;}
+  .bottom-btn{width:48px; height:48px;}
+}
+
+body {
+
+  margin: 0;
+
+  padding: 0;
+
+  background: #1e1e1f;
+
+  font-family: Arial, sans-serif;
+
+  color: white;
+
+  overflow-x: hidden;
+
+  user-select: none;
+
+  -webkit-user-select: none;
+
+  -moz-user-select: none;
+
+  -ms-user-select: none;
+
+  -webkit-touch-callout: none;
+
+  position: relative;
+
+}
+
+/* ===== Неоновые полоски ===== */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background: 
+    linear-gradient(90deg, transparent 0%, rgba(0, 255, 255, 0.1) 50%, transparent 100%) 10% 20% / 200px 3px,
+    linear-gradient(90deg, transparent 0%, rgba(255, 0, 255, 0.1) 50%, transparent 100%) 30% 60% / 150px 2px,
+    linear-gradient(0deg, transparent 0%, rgba(0, 255, 255, 0.08) 50%, transparent 100%) 70% 10% / 3px 180px,
+    linear-gradient(90deg, transparent 0%, rgba(255, 100, 255, 0.12) 50%, transparent 100%) 85% 80% / 180px 2px,
+    linear-gradient(0deg, transparent 0%, rgba(100, 255, 255, 0.1) 50%, transparent 100%) 20% 50% / 2px 200px,
+    linear-gradient(90deg, transparent 0%, rgba(255, 50, 150, 0.1) 50%, transparent 100%) 50% 30% / 160px 2px,
+    linear-gradient(0deg, transparent 0%, rgba(150, 100, 255, 0.08) 50%, transparent 100%) 90% 70% / 2px 150px;
+  background-repeat: no-repeat;
+  animation: neonMove 20s infinite linear;
+}
+
+@keyframes neonMove {
+  0% { 
+    background-position: 
+      10% 20%, 
+      30% 60%, 
+      70% 10%, 
+      85% 80%, 
+      20% 50%, 
+      50% 30%, 
+      90% 70%;
+  }
+  25% { 
+    background-position: 
+      15% 25%, 
+      35% 65%, 
+      75% 15%, 
+      80% 75%, 
+      25% 55%, 
+      55% 35%, 
+      85% 75%;
+  }
+  50% { 
+    background-position: 
+      20% 30%, 
+      40% 70%, 
+      80% 20%, 
+      75% 70%, 
+      30% 60%, 
+      60% 40%, 
+      80% 80%;
+  }
+  75% { 
+    background-position: 
+      15% 25%, 
+      35% 65%, 
+      75% 15%, 
+      80% 75%, 
+      25% 55%, 
+      55% 35%, 
+      85% 75%;
+  }
+  100% { 
+    background-position: 
+      10% 20%, 
+      30% 60%, 
+      70% 10%, 
+      85% 80%, 
+      20% 50%, 
+      50% 30%, 
+      90% 70%;
+  }
+}
+
+body::after {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
+  background: 
+    linear-gradient(90deg, transparent 0%, rgba(255, 200, 0, 0.08) 50%, transparent 100%) 60% 40% / 120px 2px,
+    linear-gradient(0deg, transparent 0%, rgba(0, 200, 255, 0.1) 50%, transparent 100%) 40% 90% / 2px 140px,
+    linear-gradient(90deg, transparent 0%, rgba(255, 0, 150, 0.09) 50%, transparent 100%) 25% 15% / 140px 2px,
+    linear-gradient(0deg, transparent 0%, rgba(200, 100, 255, 0.08) 50%, transparent 100%) 75% 25% / 2px 160px;
+  background-repeat: no-repeat;
+  animation: neonMove2 25s infinite linear reverse;
+}
+
+@keyframes neonMove2 {
+  0% { 
+    background-position: 
+      60% 40%, 
+      40% 90%, 
+      25% 15%, 
+      75% 25%;
+  }
+  33% { 
+    background-position: 
+      65% 45%, 
+      45% 85%, 
+      30% 20%, 
+      70% 30%;
+  }
+  66% { 
+    background-position: 
+      55% 35%, 
+      35% 95%, 
+      20% 10%, 
+      80% 20%;
+  }
+  100% { 
+    background-position: 
+      60% 40%, 
+      40% 90%, 
+      25% 15%, 
+      75% 25%;
+  }
+}
+
+* {
+
+  user-select: none;
+
+  -webkit-user-select: none;
+
+  -moz-user-select: none;
+
+  -ms-user-select: none;
+
+  -webkit-touch-callout: none;
+
+}
+
+input, textarea {
+
+  user-select: text;
+
+  -webkit-user-select: text;
+
+  -moz-user-select: text;
+
+  -ms-user-select: text;
+
+}
+
+img {
+
+  -webkit-user-drag: none;
+
+  -khtml-user-drag: none;
+
+  -moz-user-drag: none;
+
+  -o-user-drag: none;
+
+  user-drag: none;
+
+  pointer-events: none;
+
+}
+
+video {
+
+  -webkit-user-drag: none;
+
+  -khtml-user-drag: none;
+
+  -moz-user-drag: none;
+
+  -o-user-drag: none;
+
+  user-drag: none;
+
+}
+
+
+
+/* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
+
+.top-bar {
+
+  position: absolute;
+
+  top: 12px;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  width: 90%;
+
+  max-width: 1300px;
+
+  height: 70px;
+
+  background: var(--accent);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  padding-left: 24px;
+
+  padding-right: 24px;
+
+  box-shadow: 0 2px 15px rgba(0, 0, 0, 0.3);
+
+  z-index: 200;
+
+  backdrop-filter: blur(10px);
+
+  border-radius: 12px;
+
+}
+
+.register-icon, .avatar-icon, .search-icon {
+
+  width: 60px;
+
+  height: 60px;
+
+  border-radius: 50%;
+
+  cursor: pointer;
+
+  transition: transform 0.25s ease, filter 0.3s ease;
+
+  filter: drop-shadow(0 0 8px rgba(0, 0, 0, 0.5));
+
+  background-size: cover;
+
+  background-position: center;
+
+  flex: 0 0 auto;
+
+}
+
+.register-icon { background-image: url('icons/register.png'); margin-left: 10px; }
+
+.avatar-icon { display: none; margin-left: 10px; }
+
+.search-icon { background-image: url('icons/search.png'); margin-right: 10px; }
+
+.register-icon:hover, .avatar-icon:hover, .search-icon:hover {
+
+  transform: scale(1.05);
+
+  filter: drop-shadow(0 0 12px rgba(255, 200, 50, 0.8));
+
+}
+
+
+
+/* ===== ПОЛЕ ПОИСКА ===== */
+
+.search-input {
+
+  position: absolute;
+
+  left: 50%;
+
+  transform: translateX(-50%);
+
+  width: 300px;
+
+  max-width: 40%;
+
+  height: 45px;
+
+  padding: 0 15px;
+
+  border-radius: 25px;
+
+  border: none;
+
+  background: rgba(255, 255, 255, 0.1);
+
+  color: white;
+
+  font-size: 16px;
+
+  outline: none;
+
+  display: none;
+
+  z-index: 201;
+
+  backdrop-filter: blur(10px);
+
+  transition: all 0.3s ease;
+
+}
+
+.search-input.visible {
+
+  display: block;
+
+  animation: slideIn 0.3s ease;
+
+}
+
+@keyframes slideIn {
+
+  from {
+
+    opacity: 0;
+
+    transform: translateX(-50%) translateY(-10px);
+
+  }
+
+  to {
+
+    opacity: 1;
+
+    transform: translateX(-50%) translateY(0);
+
+  }
+
+}
+
+.search-input::placeholder {
+
+  color: rgba(255, 255, 255, 0.5);
+
+}
+
+.search-input:focus {
+
+  background: rgba(255, 255, 255, 0.15);
+
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+
+}
+
+
+
+/* ====== МОДАЛКА ====== */
+
+.auth-modal {
+
+  position: fixed;
+
+  left: 50%;
+
+  top: 50%;
+
+  transform: translate(-50%,-50%);
+
+  width: 360px;
+
+  background: rgba(10,10,10,0.9);
+
+  border-radius: 14px;
+
+  padding: 18px;
+
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+
+  z-index: 500;
+
+  display: none;
+
+  color: #fff;
+
+}
+
+.auth-modal.visible { display: block; }
+
+.auth-tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+
+.auth-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; border-radius: 10px; background: rgba(255,255,255,0.04); }
+
+.auth-tab.active { background: rgba(255,255,255,0.12); font-weight: 700; }
+
+.auth-form { margin-top: 6px; }
+
+.input-group { position: relative; margin-bottom: 12px; }
+
+.auth-form input {
+
+  width: 100%;
+
+  padding: 10px 40px 10px 12px;
+
+  border-radius: 8px;
+
+  border: none;
+
+  background: rgba(255,255,255,0.05);
+
+  color: #fff;
+
+  outline: none;
+
+}
+
+.eye-icon {
+
+  position: absolute;
+
+  right: 10px;
+
+  top: 50%;
+
+  transform: translateY(-50%);
+
+  width: 24px;
+
+  height: 24px;
+
+  background-size: cover;
+
+  background-position: center;
+
+  cursor: pointer;
+
+  opacity: 0.7;
+
+  transition: opacity .2s ease;
+
+}
+
+.eye-icon:hover { opacity: 1; }
+
+.auth-form button {
+
+  width: 100%;
+
+  padding: 10px;
+
+  border-radius: 8px;
+
+  border: none;
+
+  background: #fff;
+
+  color: #000;
+
+  cursor: pointer;
+
+  font-weight: 700;
+
+}
+
+.auth-error { color: #ff8080; font-size: 13px; margin: 8px 0; display: none; text-align: center; }
+
+
+
+/* ===== Профиль ===== */
+
+.profile-panel {
+
+  position: fixed;
+
+  top: 86px;
+
+  right: calc(5% + 12px);
+
+  width: 260px;
+
+  background: rgba(10,10,10,0.75);
+
+  border-radius: 12px;
+
+  padding: 18px;
+
+  display: none;
+
+  z-index: 300;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+
+  backdrop-filter: blur(6px);
+
+}
+
+.profile-panel.visible { display: block; animation: pop .18s ease; }
+
+@keyframes pop { from {opacity: 0; transform: translateY(-6px) scale(.995);} to {opacity: 1; transform: translateY(0) scale(1);} }
+
+.profile-avatar { width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 10px; background-size: cover; background-position: center; border: 2px solid rgba(255,255,255,0.06); }
+
+.profile-name { text-align: center; font-weight: 600; margin-bottom: 8px; }
+
+.profile-actions { text-align: center; margin-top: 6px; }
+
+.profile-btn {
+
+  border: none;
+
+  background: rgba(255,255,255,0.08);
+
+  color: white;
+
+  padding: 8px 12px;
+
+  border-radius: 10px;
+
+  cursor: pointer;
+
+  margin: 6px 4px;
+
+}
+
+.profile-btn:hover { background: rgba(255,255,255,0.16); }
+
+
+
+/* ===== Видео ===== */
+
+.video-frame{
+
+  position:relative;
+
+  width:90%;
+
+  max-width:1300px;
+
+  height:600px;
+
+  background:#000;
+
+  border-radius:20px;
+
+  margin:20px auto 30px;
+
+  overflow:hidden;
+
+  z-index: 10;
+
+}
+
+.video-frame video{
+
+  width:100%;
+
+  height:100%;
+
+  object-fit:cover;
+
+  border-radius:20px;
+
+}
+
+.sound-btn{
+
+  position:absolute;
+
+  bottom:15px;
+
+  right:15px;
+
+  width:55px;
+
+  height:55px;
+
+  background-color:rgba(255,255,255,0.6);
+
+  background-image:url('icons/sound-off.png');
+
+  background-size:70% 70%;
+
+  background-repeat:no-repeat;
+
+  background-position:center;
+
+  border-radius:50%;
+
+  cursor:pointer;
+
+  z-index:120;
+
+  transition:transform 0.2s ease, background-color 0.3s ease;
+
+}
+
+.sound-btn:hover{transform:scale(1.08);background-color:rgba(255,255,255,0.85);}
+
+
+/* ===== Категории ===== */
+.category-bar{
+  width:90%;
+  max-width:1300px;
+  margin:0 auto 20px;
+  display:flex;
+  gap:12px;
+  justify-content:center;
+  position: relative;
+  z-index: 10;
+}
+.category-btn{
+  padding:16px 32px;
+  border:none;
+  border-radius:12px;
+  background:rgba(255,255,255,0.12);
+  color:#fff;
+  cursor:pointer;
+  font-weight:700;
+  font-size:18px;
+  transition:background .2s ease, transform .15s ease;
+  position: relative;
+  z-index: 10;
+}
+.category-btn:hover{ background:rgba(255,255,255,0.18); transform:translateY(-1px); }
+.category-btn.active{ background:rgba(255,255,255,0.28); }
+
+
+/* ===== ПАНЕЛИ ===== */
+
+.top-panels{
+
+  position:relative;
+
+  width:100%;
+
+  display:flex;
+
+  justify-content:center;
+
+  align-items:center;
+
+  gap:40px;
+
+  margin:60px auto 40px;
+
+  perspective:1000px;
+
+  z-index: 10;
+
+}
+
+.panel{
+
+  position:relative;
+
+  width:140px;
+
+  height:240px;
+
+  background-size:cover;
+
+  background-position:center;
+
+  border-radius:10px;
+
+  transition:all 0.5s ease;
+
+  box-shadow:0 0 15px rgba(0,0,0,0.6);
+
+  filter:brightness(0.6);
+
+  transform:scale(0.9) rotateY(-20deg);
+
+  opacity:0.7;
+
+  overflow:hidden;
+
+}
+
+.panel.active{
+
+  width:180px;
+
+  height:320px;
+
+  transform:scale(1.1) rotateY(0deg);
+
+  filter:brightness(1.2);
+
+  opacity:1;
+
+  box-shadow:0 0 25px rgba(255,140,0,0.8);
+
+}
+
+
+
+/* ===== Названия ===== */
+
+.panel-title {
+
+  position: absolute;
+
+  top: 0;
+
+  width: 100%;
+
+  text-align: center;
+
+  font-size: 20px;
+
+  font-weight: 900;
+
+  text-transform: uppercase;
+
+  letter-spacing: 1.5px;
+
+  padding: 8px 8px 10px;
+
+  background: linear-gradient(to bottom, rgba(0,0,0,0.65), rgba(0,0,0,0.25) 60%, rgba(0,0,0,0) 100%);
+
+  color: #ffffff;
+
+  text-shadow: 0 0 6px rgba(0,0,0,0.6);
+
+  opacity: 1;
+
+  transition: opacity 0.2s ease;
+
+  overflow: hidden;
+
+  display: -webkit-box;
+
+  -webkit-line-clamp: 2;
+
+  -webkit-box-orient: vertical;
+
+  /* Не разбивать слова и не ставить переносы/чёрточки */
+  hyphens: none;
+  -webkit-hyphens: none;
+  -ms-hyphens: none;
+  word-break: normal;
+  overflow-wrap: break-word;
+}
+
+.panel.active .panel-title { opacity: 1; }
+
+/* Коррекция размера заголовка только для 'ВРЕМЯ ПРИКЛЮЧЕНИЙ' */
+.panel[data-title="ВРЕМЯ ПРИКЛЮЧЕНИЙ"] .panel-title { font-size: 18px; }
+
+/* Сделать 'МОЛОКОСОСЫ' в одну строку чуть меньшим */
+.panel[data-title="МОЛОКОСОСЫ"] .panel-title {
+  font-size: 16px;
+  letter-spacing: 0.8px;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip;
+  text-align: center;
+  padding-left: 0;
+  margin-left: 0;
+}
+
+
+
+.controls{text-align:center;margin-top:-20px;position: relative;z-index: 10;}
+
+.arrow{display:inline-block;font-size:34px;color:#fff;cursor:pointer;user-select:none;background:none;padding:20px 70px;margin:0 15px;border-radius:40px;transition:0.3s ease;border:none;}
+
+.arrow:hover{background:rgba(255,255,255,0.1);transform:scale(1.15);}
+
+.counter{display:inline-block;font-size:20px;color:#fff;margin:0 20px;user-select:none;}
+
+@media(max-width:600px){
+
+  .video-frame{height:360px;width:100%;border-radius:0;}
+
+  .panel{width:100px;height:160px;}
+
+  .panel.active{width:130px;height:220px;}
+
+  .arrow{padding:14px 40px;font-size:28px;}
+
+  .panel-title {font-size:18px;}
+
+  .category-bar{
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .category-btn{
+    width: 100%;
+    padding: 14px 20px;
+    font-size: 16px;
+    border-radius: 10px;
+  }
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+
+
+<!-- ===== ВЕРХ ===== -->
+
+<div class="top-bar">
+
+  <div class="search-icon" id="searchBtn"></div>
+
+  <input type="text" class="search-input" id="searchInput" placeholder="Поиск...">
+
+  <div class="register-icon" id="registerBtn"></div>
+
+  <div class="avatar-icon" id="avatarBtn" style="background-image:url('img/default-avatar.png');"></div>
+
+</div>
+
+
+
+<!-- ===== МОДАЛКА ===== -->
+
+<div class="auth-modal" id="authModal">
+
+  <div class="auth-tabs">
+
+    <div class="auth-tab active" id="tabLogin">Вход</div>
+
+    <div class="auth-tab" id="tabRegister">Регистрация</div>
+
+  </div>
+
+  <form id="loginForm" class="auth-form">
+
+    <div class="input-group"><input type="text" id="login_username" placeholder="Никнейм" required></div>
+
+    <div class="input-group"><input type="password" id="login_password" placeholder="Пароль" required><div class="eye-icon" id="login_eye" style="background-image:url('icons/eye-closed.png');"></div></div>
+
+    <div class="auth-error" id="loginError"></div><button type="submit">Войти</button>
+
+  </form>
+
+  <form id="registerForm" class="auth-form" style="display:none;">
+
+    <div class="input-group"><input type="text" id="reg_username" placeholder="Никнейм" minlength="3" required></div>
+
+    <div class="input-group"><input type="password" id="reg_password" placeholder="Пароль" minlength="6" required><div class="eye-icon" id="reg_eye1" style="background-image:url('icons/eye-closed.png');"></div></div>
+
+    <div class="input-group"><input type="password" id="reg_repeat" placeholder="Повторите пароль" minlength="6" required><div class="eye-icon" id="reg_eye2" style="background-image:url('icons/eye-closed.png');"></div></div>
+
+    <div class="auth-error" id="regError"></div><button type="submit">Зарегистрироваться</button>
+
+  </form>
+
+</div>
+
+
+
+<!-- ===== ПРОФИЛЬ ===== -->
+
+<div class="profile-panel" id="profilePanel">
+
+  <div class="profile-avatar" id="profileAvatar" style="background-image:url('img/default-avatar.png');"></div>
+
+  <div class="profile-name" id="profileName">Гость</div>
+
+  <div class="profile-actions"><button class="profile-btn" id="logoutBtn">Выйти</button></div>
+
+</div>
+
+
+
+<!-- ===== ВИДЕО ===== -->
+
+<div class="video-frame">
+
+  <video id="mainVideo" autoplay loop muted playsinline>
+
+    <source src="video/main.mp4" type="video/mp4">
+
+  </video>
+
+  <div class="sound-btn" id="soundBtn"></div>
+
+</div>
+
+<!-- ===== КАТЕГОРИИ ===== -->
+<div class="category-bar">
+  <button class="category-btn" id="btnFilms">Фильмы</button>
+  <button class="category-btn" id="btnSeries">Сериалы</button>
+  <button class="category-btn" id="btnCartoons">Мультфильмы</button>
+</div>
+
+
+
+<!-- ===== ПАНЕЛИ ===== -->
+
+<div class="top-panels" id="topPanels"></div>
+
+
+
+<div class="controls">
+
+  <span class="arrow left" id="prevBtn">◄</span>
+
+  <span class="counter" id="counter">1/20</span>
+
+  <span class="arrow right" id="nextBtn">►</span>
+
+</div>
+
+<!-- ===== ИНФО-БЛОК ПОД КНОПКАМИ ВЛЕВО/ВПРАВО ===== -->
+<div class="info-block" id="infoBlock">
+  <img id="infoPoster" class="info-poster" alt="Постер" src="img/top/1.png" />
+  <div class="info-content">
+    <div class="info-title" id="infoTitle">СОПРАНО</div>
+    <div class="info-desc" id="infoDesc">— История мафиозного босса Тони, баланс между семьёй и криминалом.</div>
+  </div>
+  
+</div>
+
+
+
+<script>
+
+// ===== звук =====
+
+const video=document.getElementById('mainVideo');
+
+const soundBtn=document.getElementById('soundBtn');
+
+soundBtn.addEventListener('click',()=>{video.muted=!video.muted;soundBtn.style.backgroundImage=video.muted?"url('icons/sound-off.png')":"url('icons/sound-on.png')";});
+
+
+
+// ===== панели =====
+
+const titles=["СОПРАНО","ГОЛЯК","ИГРА ПРЕСТОЛОВ","МОЛОКОСОСЫ","БЕССТЫЖИЕ","ЗАДОРНЫЕ РЕБЯТА","ВРЕМЯ ПРИКЛЮЧЕНИЙ","БИВИС И БАТХЕД","ДАРЬЯ","ДОМ ДРАКОНА","ОДНАЖДЫ В ГОЛЛИВУДЕ","МАЛЬШНИК В ЛАС ВЕГАСЕ","АМЕРИКАНСКАЯ ИСТОРИЯ УЖАСОВ","ХОДЯЧИЕ МЕРТВЕЦЫ","ДЕКСТЕР","ОХОТА","АМЕЛИ","ВОЛК С УОЛ СТРИТ","ОСТАРЫЕ КОЗЫРЬКИ","ГНЕВ"];
+
+const topPanels=document.getElementById('topPanels');
+
+
+
+// цветная подсветка для всех названий
+
+const colorMap = {
+
+  "СОПРАНО": "#FF4DFF",                    // фиолетово-розовый
+
+  "ГОЛЯК": "#00E5FF",                      // циановый
+
+  "ИГРА ПРЕСТОЛОВ": "#FFD166",            // золотой
+
+  "МОЛОКОСОСЫ": "#7CFFB2",                // мятный
+
+  "БЕССТЫЖИЕ": "#FF6B6B",                 // красно-оранжевый
+
+  "ЗАДОРНЫЕ РЕБЯТА": "#FF9F43",           // оранжевый
+
+  "ВРЕМЯ ПРИКЛЮЧЕНИЙ": "#00D2FF",         // голубой
+
+  "БИВИС И БАТХЕД": "#FF00FF",            // ярко-розовый
+
+  "ДАРЬЯ": "#9B59B6",                     // фиолетовый
+
+  "ДОМ ДРАКОНА": "#E74C3C",                // красный
+
+  "ОДНАЖДЫ В ГОЛЛИВУДЕ": "#F39C12",       // янтарный
+
+  "МАЛЬШНИК В ЛАС ВЕГАСЕ": "#1ABC9C",     // бирюзовый
+
+  "АМЕРИКАНСКАЯ ИСТОРИЯ УЖАСОВ": "#8E44AD",// темно-фиолетовый
+
+  "ХОДЯЧИЕ МЕРТВЕЦЫ": "#27AE60",          // зеленый
+
+  "ДЕКСТЕР": "#C0392B",                    // темно-красный
+
+  "ОХОТА": "#16A085",                     // изумрудный
+
+  "АМЕЛИ": "#E67E22",                      // морковный
+
+  "ВОЛК С УОЛ СТРИТ": "#3498DB",          // синий
+
+  "ОСТАРЫЕ КОЗЫРЬКИ": "#2ECC71",           // изумрудно-зеленый
+
+  "ГНЕВ": "#E91E63"                        // розово-красный
+
+};
+
+// Base URL for API: ?api= overrides, else same-origin, else localhost
+const API_PARAM = new URLSearchParams(location.search).get('api');
+const BASE = API_PARAM || ((location.origin && location.origin.startsWith('http'))
+  ? location.origin
+  : 'http://localhost:3081');
+
+// Map panel titles to canonical series names used in bot captions
+const SERIES_ALIASES = {
+  "ГОЛЯК": "сопрано"
+};
+
+function getCanonSeries(title){
+  return (SERIES_ALIASES[title] || title);
+}
+
+// Resolve first matching video id from API by panel title (case-insensitive)
+async function resolveVideoIdByTitle(title){
+  try{
+    const r = await fetch(`${BASE}/api/videos`);
+    if(!r.ok) return null;
+    const vids = await r.json();
+    const norm = s => String(s||'').toLowerCase().trim().replace(/\s+/g,' ');
+    const t = norm(title);
+    const canon = norm(SERIES_ALIASES[title] || title);
+    // prefer series metadata match
+    const bySeries = vids.find(v => norm(v.series) === canon);
+    if (bySeries) return bySeries.id;
+    // exact match first
+    const exact = vids.find(v => norm(v.title) === t);
+    if (exact) return exact.id;
+    // prefer startsWith match (e.g., "СОПРАНО" vs "сопрано 1 сезон 1 серия")
+    const prefer = vids.find(v => norm(v.title).startsWith(t));
+    if(prefer) return prefer.id;
+    const any = vids.find(v => norm(v.title).includes(t));
+    if (any) return any.id;
+    // fallback to latest item if nothing matched
+    return Array.isArray(vids) && vids.length ? vids[0].id : null;
+  }catch{ return null; }
+}
+
+
+
+for(let i=1;i<=20;i++){
+
+  const p=document.createElement('div');
+
+  p.className='panel';
+
+  p.style.backgroundImage=`url('img/top/${i}.png')`;
+
+
+
+  // добавляем заголовок и сохраняем имя и цвет в data-атрибуты для всех плашек
+
+  const t=document.createElement('div');
+
+  t.className='panel-title';
+
+  t.textContent=titles[i-1];
+
+  p.appendChild(t);
+
+  p.dataset.title = titles[i-1];
+
+  p.dataset.color = colorMap[titles[i-1]] || '#ffffff';
+
+  p.dataset.index = String(i); // глобальный индекс плашки (1..20)
+
+
+
+  topPanels.appendChild(p);
+
+  // open original player with resolved video id
+  p.addEventListener('click', async ()=>{
+    const title = p.dataset.title || '';
+    const display = title; // как на плашке
+    const seriesParam = getCanonSeries(title);
+    const id = await resolveVideoIdByTitle(title);
+    if(!id){
+      // As a last resort, open list page so user can pick
+      const listUrl = API_PARAM
+        ? new URL('players/index.html', location.href)
+        : new URL(`${BASE}/players/index.html`);
+      if (API_PARAM) listUrl.searchParams.set('api', API_PARAM);
+      window.location.href = listUrl.toString();
+      return;
+    }
+    const url = API_PARAM
+      ? new URL('players/player.html', location.href)
+      : new URL(`${BASE}/players-ext/player.html`);
+    url.searchParams.set('id', id);
+    url.searchParams.set('series', seriesParam);
+    url.searchParams.set('display', display);
+    if (API_PARAM) url.searchParams.set('api', API_PARAM);
+    window.location.href = url.toString();
+  });
+
+}
+
+
+
+// ===== Категории =====
+const categoryMap = {
+  // фильмы
+  "ОДНАЖДЫ В ГОЛЛИВУДЕ":"film",
+  "МАЛЬШНИК В ЛАС ВЕГАСЕ":"film",
+  "ОХОТА":"film",
+  "АМЕЛИ":"film",
+  "ВОЛК С УОЛ СТРИТ":"film",
+  "ГНЕВ":"film",
+  // сериалы
+  "СОПРАНО":"series",
+  "ГОЛЯК":"series",
+  "ИГРА ПРЕСТОЛОВ":"series",
+  "МОЛОКОСОСЫ":"series",
+  "БЕССТЫЖИЕ":"series",
+  "ДОМ ДРАКОНА":"series",
+  "АМЕРИКАНСКАЯ ИСТОРИЯ УЖАСОВ":"series",
+  "ХОДЯЧИЕ МЕРТВЕЦЫ":"series",
+  "ДЕКСТЕР":"series",
+  "ОСТАРЫЕ КОЗЫРЬКИ":"series",
+  // мультфильмы (анимация)
+  "ВРЕМЯ ПРИКЛЮЧЕНИЙ":"cartoon",
+  "БИВИС И БАТХЕД":"cartoon",
+  "ДАРЬЯ":"cartoon",
+  "ЗАДОРНЫЕ РЕБЯТА":"cartoon"
+};
+
+const btnFilms = document.getElementById('btnFilms');
+const btnSeries = document.getElementById('btnSeries');
+const btnCartoons = document.getElementById('btnCartoons');
+
+function setActiveButton(btn){
+  [btnFilms, btnSeries, btnCartoons].forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+function applyCategory(category){
+  // показать/скрыть плашки по категории
+  const allPanels = Array.from(document.querySelectorAll('.panel'));
+  allPanels.forEach(p=>{
+    const title = p.dataset.title || '';
+    const cat = categoryMap[title];
+    if(category === 'film' || category === 'series' || category === 'cartoon'){
+      p.style.display = (cat === category) ? 'block' : 'none';
+    } else {
+      p.style.display = 'block';
+    }
+  });
+  // пересчитать массив панелей для логики карусели
+  panels = Array.from(document.querySelectorAll('.panel')).filter(p=>p.style.display !== 'none');
+  // сбросить индекс к началу и перестроить
+  currentIndex = 0;
+  updatePanels();
+fitTitles();
+}
+
+btnFilms.addEventListener('click', ()=>{ setActiveButton(btnFilms); applyCategory('film'); });
+btnSeries.addEventListener('click', ()=>{ setActiveButton(btnSeries); applyCategory('series'); });
+btnCartoons.addEventListener('click', ()=>{ setActiveButton(btnCartoons); applyCategory('cartoon'); });
+
+
+// Видимое количество плашек: на телефоне 3, на десктопе 5.
+
+// Функция проверяет ширину окна и возвращает соответствующее значение.
+
+function getVisibleCount(){
+
+  return window.innerWidth <= 600 ? 3 : 5;
+
+}
+
+
+
+// получить актуальный список панелей (NodeList -> Array удобнее)
+
+let panels = Array.from(document.querySelectorAll('.panel'));
+
+// Устанавливаем currentIndex так, чтобы первая плашка (индекс 0) была активна по центру
+
+let visibleCount = getVisibleCount();
+
+let centerOffset = Math.floor(visibleCount/2);
+
+let currentIndex = (0 - centerOffset + panels.length) % panels.length;
+
+
+
+// начальное значение visibleCount (уже установлено выше)
+
+
+
+// helper: сбросить inline-подсветку
+
+function clearPanelStyle(p){
+
+  p.style.boxShadow = '';
+
+  // вернуть стандартный text-shadow цвет у заголовка (если есть)
+
+  const titleEl = p.querySelector('.panel-title');
+
+  if(titleEl){
+
+    titleEl.style.color = '';
+
+    titleEl.style.textShadow = '';
+
+  }
+
+}
+
+
+
+// функция обновления счетчика
+
+function updateCounter(){
+
+  const vCount = getVisibleCount();
+
+  const centerOffset = Math.floor(vCount/2);
+
+  const centerIndex = (currentIndex + centerOffset + panels.length) % panels.length;
+
+  const counter = document.getElementById('counter');
+
+  counter.textContent = `${centerIndex + 1}/${panels.length}`;
+
+}
+
+
+
+// основная функция отображения
+
+function updatePanels(){
+
+  // обновляем видимое количество (учитываем возможное изменение размера экрана)
+
+  visibleCount = getVisibleCount();
+
+
+
+  // прячем все
+
+  panels.forEach(p=>{ p.style.display='none'; clearPanelStyle(p); p.classList.remove('active'); });
+
+
+
+  // центральный индекс (тот, который должен быть активен и в центре)
+
+  const centerOffset = Math.floor(visibleCount/2); // 2 для visibleCount=5, 1 для visibleCount=3
+
+  const centerIndex = (currentIndex + centerOffset + panels.length) % panels.length;
+
+
+
+  // показываем visibleCount панелей, учитывая границы массива
+
+  // вычисляем начальный индекс для отображения
+
+  // Вычисляем startIdx на основе centerIndex
+
+  let startIdx = centerIndex - centerOffset;
+
+  // Если startIdx отрицательный (при первых плашках), начинаем с 0
+
+  if(startIdx < 0){
+
+    startIdx = 0;
+
+  }
+
+  // Вычисляем сколько плашек нужно показать
+
+  let panelsToShow = visibleCount;
+
+  // При первых плашках показываем меньше плашек (3 плашки: 0, 1, 2)
+
+  if(centerIndex < centerOffset){
+
+    // Показываем только столько плашек, чтобы активная была в центре показанных
+
+    panelsToShow = centerIndex + centerOffset + 1;
+
+    if(panelsToShow > visibleCount) panelsToShow = visibleCount;
+
+    startIdx = 0;
+
+  }
+
+  
+
+  // Показываем плашки без циклического перехода
+
+  // При листании вправо плашки сдвигаются влево, новые появляются справа
+
+  // Когда доходим до определенного момента, плашки пропадают слева
+
+  for(let i=0;i<panelsToShow;i++){
+
+    // Вычисляем индекс
+
+    let idx = startIdx + i;
+
+    // Показываем плашку только если индекс в допустимом диапазоне
+
+    if(idx >= 0 && idx < panels.length){
+
+      panels[idx].style.display = 'block';
+
+    }
+
+    // Если индекс выходит за границы массива, не показываем плашку
+
+  }
+
+
+
+  // помечаем активный и применяем цветовую подсветку если есть
+
+  panels.forEach((p, i)=>{
+
+    if(i === centerIndex){
+
+      p.classList.add('active');
+
+      // если у панели есть назначенный цвет — применяем внешнюю подсветку
+
+      const col = p.dataset.color;
+
+      if(col){
+
+        // сильная разноцветная тень для активной плашки
+
+        p.style.boxShadow = `0 0 30px ${col}, 0 0 60px ${col}33`;
+
+        const titleEl = p.querySelector('.panel-title');
+
+        if(titleEl){
+
+          titleEl.style.color = col;
+
+          titleEl.style.textShadow = `0 0 8px ${col}, 0 0 18px ${col}`;
+
+        }
+
+      } else {
+
+        // если цвет не задан — применяем дефолтный активный эффект (без изменения цвета)
+
+        p.style.boxShadow = '0 0 25px rgba(255,140,0,0.8)';
+
+      }
+
+    } else {
+
+      // неактивные — оставить базовую тень
+
+      // (clearPanelStyle уже убрал инлайновые стили)
+
+    }
+
+  });
+
+
+
+  // Нормализуем currentIndex, чтобы он был в диапазоне [0, panels.length-1]
+
+  // Это важно для сохранения правильного состояния при следующих обновлениях
+
+  currentIndex = ((currentIndex % panels.length) + panels.length) % panels.length;
+
+  
+
+  // обновляем счетчик
+
+  updateCounter();
+
+  // обновляем инфо-блок по активной плашке (центральной)
+  const centerOffset2 = Math.floor(visibleCount/2);
+  const centerIndex2 = (currentIndex + centerOffset2 + panels.length) % panels.length;
+  updateInfoFromPanel(panels[centerIndex2]);
+  // подгон заголовков
+  fitTitles();
+}
+
+
+
+// функция для получения текущего центрального индекса
+
+function getCenterIndex(){
+
+  const centerOffset = Math.floor(getVisibleCount()/2);
+
+  return (currentIndex + centerOffset + panels.length) % panels.length;
+
+}
+
+
+
+// ===== ОПИСАНИЯ ДЛЯ ИНФО-БЛОКА =====
+const descriptions = {
+  "СОПРАНО": `— История мафиозного босса Тони, балансирующего между семьёй и бизнесом.
+— Терапия, панические атаки и поиск контроля над жизнью.
+— Войны кланов и тяжесть наследия.
+— Горький юмор и бытовая драма.
+— Разговоры на кухне — как на исповеди.
+— Предательство и верность меняются местами.
+— Кризис среднего возраста под выстрелы.
+— Власть как бремя и соблазн.
+— Насилие без романтики, люди без масок.
+— Телевизионная классика эпохи.`,
+  "ГОЛЯК": `— Маленький прибрежный город и большие неприятности.
+— Упрямый герой выживает на авось и смекалке.
+— Дружба, аферы и неизбежные долги.
+— Юмор на грани и трезвая ирония.
+— Ошибки прошлого лезут из всех углов.
+— Небогатые мечты и дорогие последствия.
+— Случайные победы и частые падения.
+— Любовь — как редкая передышка.
+— Паб, порт и бесконечный ветер.
+— Приземлённая, живая хроника края.`,
+  "ИГРА ПРЕСТОЛОВ": `— Континенты, дома и железный трон.
+— Политика как искусство выживания.
+— Зима близко — и с ней древний страх.
+— Драконы и кровь как валюта мира.
+— Честь против интриги — счёт неравный.
+— Герои умирают, легенды рождаются.
+— Пламя амбиций и лед безжалостности.
+— Клятвы, нарушенные ценой корон.
+— Война — шепотом и мечом.
+— Эпос, где цена — целые королевства.`,
+  "МОЛОКОСОСЫ": `— Подростки на кромке взросления.
+— Любовь, зависимость и поиски себя.
+— Школа — фон для настоящих бурь.
+— Дружбы рушатся, новые крепнут.
+— Семьи трещат, правда режет.
+— Музыка ночей и утренние сожаления.
+— Ошибки становятся уроками — не сразу.
+— Честно, неровно, болезненно красиво.
+— Каждый герой — своя трагикомедия.
+— Моменты, что остаются навсегда.`,
+  "БЕССТЫЖИЕ": `— Семья на обочине, но вместе.
+— Хаос, бедность и стальная любовь.
+— Взрослеть приходится раньше срока.
+— Аферы как способ выживания.
+— Смех сквозь слёзы — фирменный тон.
+— Отчаяние и нежность бок о бок.
+— Город давит, дом держит.
+— Каждый день — новая задача-невозможно.
+— Герои с дефектами и золотым сердцем.
+— Бесстыдно честная сага о семье.`,
+  "ЗАДОРНЫЕ РЕБЯТА": `— Команда друзей и вечные проделки.
+— Смех — главный двигатель приключений.
+— Простые радости двора и улицы.
+— Товарищество, проверенное шалостями.
+— Каждый план — чуть безумие, чуть чудо.
+— Ошибки проходят без злобы.
+— Мир безопасно нелеп и тёпл.
+— Уроки дружбы без нравоучений.
+— Радость движения и фантазии.
+— Детство, которое не заканчивается.`,
+  "ВРЕМЯ ПРИКЛЮЧЕНИЙ": `— Путешествие мальчика и пса-метаморфа.
+— Мир, где магия — норма, логика — игра.
+— Смех, тоска и философия в одном кадре.
+— Принцессы, короли и одиночество льда.
+— Квесты, что лечат сердце.
+— Песни как заклинания памяти.
+— Детское снаружи, взрослое внутри.
+— Многоцветный постапокалиптический сказ.
+— Дружба сильнее проклятий.
+— Удивляться — лучший талант.`,
+  "БИВИС И БАТХЕД": `— Двое лоботрясов против скуки мира.
+— Телевидение, гитары и бесконечные шутки.
+— Абсурд как метод познания.
+— Юмор ниже пояса — да, намеренно.
+— Сатира на культуру и её фантомы.
+— Простодушие превращает беды в фарс.
+— Плохие идеи с большим энтузиазмом.
+— Громкий смех — главный саундтрек.
+— Карикатура на подростковую свободу.
+— Культовый хаос 90-х.`,
+  "ДАРЬЯ": `— Циничная отличница в мире конформизма.
+— Сарказм как броня и компас.
+— Школа как миниатюра общества.
+— Семья, где никто не слышит конца фразы.
+— Подруга — остров нормальности.
+— Шум мира — фон для ясных мыслей.
+— Никаких розовых очков, только честность.
+— Юмор сухой, попадание меткое.
+— Печально-смешная взрослая сказка.
+— Ум — лучший бунт.`,
+  "ДОМ ДРАКОНА": `— Предыстория тронной битвы и драконьей крови.
+— Дом Таргариенов куется огнём.
+— Род против рода — внутри одной семьи.
+— Политика инкубируется в яйцах драконов.
+— Наследие тяжелей короны.
+— Предсказуемая трагедия — и всё равно больно.
+— Пламя, что пожирает своих.
+— Пиры, клятвы и ядовитые улыбки.
+— Шаги к разломам эпохи.
+— Хроника пепла и амбиций.`,
+  "ОДНАЖДЫ В ГОЛЛИВУДЕ": `— Актёр и дублёр на изломе карьеры.
+— Голливуд 60-х — миф и реальность.
+— Тёплая ностальгия и киноязык игры.
+— Дружба как главный жанр.
+— История, что могла быть иначе.
+— Влюблённый взгляд на ремесло.
+— Саундтрек, солнце и легкая грусть.
+— Комедия жестов и деталей.
+— Кинематограф о себе самом.
+— Письмо времени на плёнке.`,
+  "МАЛЬШНИК В ЛАС ВЕГАСЕ": `— Вчерашние приличные — сегодняшние легенды.
+— Память пропала, приключения остались.
+— Вегас как машина случайностей.
+— Дружба проверяется абсурдом.
+— Поиски улик в море неонового хаоса.
+— Каждая находка смешнее предыдущей.
+— Проблемы множатся быстрее планов.
+— Утро приносит ответы и новые вопросы.
+— Буйная одиссея одного вечера.
+— Комедия, которую нельзя повторить.`,
+  "АМЕРИКАНСКАЯ ИСТОРИЯ УЖАСОВ": `— Антология страхов — каждый сезон свой кошмар.
+— Дом с призраками, цирк уродов, ведьмы, отель.
+— Красота кадра и ужас сюжета.
+— Грехи прошлого возвращаются с процентами.
+— Маски срастаются с лицом.
+— Шоу о чудовищах в нас самих.
+— Любовь как тёмный ритуал.
+— Смелые жанровые эксперименты.
+— Саунд-дизайн, что лезет под кожу.
+— Кошмар, от которого не отвести глаз.`,
+  "ХОДЯЧИЕ МЕРТВЕЦЫ": `— Мир после — и люди в нём.
+— Зомби — декорация для нравственного выбора.
+— Семьи собираются из чужих.
+— Лагеря, фермы, тюрьмы, дороги.
+— Цена человечности каждый день.
+— Вождь — это ответственность за боль.
+— Каждый сезон — новый кодекс выживания.
+— Надежда упрямее смерти.
+— Дружба как броня.
+— Драма длиннее апокалипсиса.`,
+  "ДЕКСТЕР": `— Судмедэксперт с кодексом в тени.
+— Монстр, который охотится на монстров.
+— Двойная жизнь как искусство маскировки.
+— Холодный анализ и горячая кровь.
+— Семья — якорь и угроза.
+— Вина, которую не стереть.
+— Погоня за собой — самая страшная.
+— Этика, собранная по частям.
+— Голос за кадром — голос совести.
+— Триллер с анатомией души.`,
+  "ОХОТА": `— Провинция, подозрение и один неверный шаг.
+— Община ищет виновного, не истину.
+— Дружба трескается от страха.
+— Слова превращаются в камни.
+— Тишина громче крика.
+— Взгляд ребёнка и вина взрослых.
+— Лицо честного человека под прицелом.
+— Суд не там, где зал.
+— Рана, что не заживает.
+— Драма, которая щемит долго.`,
+  "АМЕЛИ": `— Париж глазами мечтательницы.
+— Маленькие добрые заговоры.
+— Нежность к странностям людей.
+— Игры со случайностью и судьбой.
+— Цвета как эмоции кадра.
+— Фотоавтоматы, стрелки и подсказки.
+— Любовь — как загадка и игра.
+— Тепло, что лечит одиночество.
+— Поэзия повседневности.
+— Сказка, в которую веришь.`,
+  "ВОЛК С УОЛ СТРИТ": `— Биржевой рай, где мораль — расходник.
+— Вкус денег и скорость падения.
+— Карьера на адреналине и лжи.
+— Комизм в сопровождении цинизма.
+— Вечеринка, которая не кончится сама.
+— Команда, верная пороку.
+— Падение как шоу.
+— Хищник в костюме и без него.
+— Хроника без тормозов.
+— Веселье, которое дорого обойдётся.`,
+  "ОСТАРЫЕ КОЗЫРЬКИ": `— Гангстеры Бирмингема после войны.
+— Бритвы в козырьках и планы на века.
+— Томас Шелби — холодная голова, горячее сердце.
+— Бизнес, политика и семейные узы.
+— Любовь и месть переплетены прочно.
+— Стиль как оружие.
+— Враги растут вместе с амбициями.
+— Музыка бьёт как молот.
+— Дым фабрик и порох в воздухе.
+— Легенда, выкованная огнём.`,
+  "ГНЕВ": `— Мужчина, у которого отняли покой.
+— Месть — метод и смысл.
+— Тишина перед бурей — его язык.
+— Преступный мир под прицелом.
+— Холодная стратегия и горячая расплата.
+— Пули как аргументы судьбы.
+— Тайна, которую он несёт один.
+— Правосудие без присяжных.
+— Город как поле боя.
+— Жёсткий, прямой, без скидок.`,
+};
+// ===== УТИЛИТЫ ДЛЯ ИНФО-БЛОКА =====
+function updateInfoFromPanel(panel){
+  if(!panel) return;
+  const idx1 = parseInt(panel.dataset.index||'1',10);
+  const title = panel.dataset.title||titles[idx1-1]||'';
+  const poster = `img/top/${idx1}.png`;
+  const desc = descriptions[title] || '';
+  const infoPoster = document.getElementById('infoPoster');
+  const infoTitle = document.getElementById('infoTitle');
+  const infoDesc = document.getElementById('infoDesc');
+  if(infoPoster) infoPoster.src = poster;
+  if(infoTitle) infoTitle.textContent = title;
+  if(infoDesc) infoDesc.textContent = desc;
+}
+
+// Авто‑подгон заголовков плашек под 2 строки без артефактов
+function fitTitles(){
+  const titlesEls = document.querySelectorAll('.panel .panel-title');
+  titlesEls.forEach(el => {
+    // базовые значения
+    let base = 20;
+    if (el.closest('.panel')?.dataset.title === 'ВРЕМЯ ПРИКЛЮЧЕНИЙ') base = 18;
+    el.style.fontSize = base + 'px';
+    el.style.letterSpacing = '1.2px';
+    // проверяем переполнение (по высоте контейнера строки)
+    const maxH = el.clientHeight; // высота видимой области
+    // небольшой цикл уменьшения
+    let tries = 0;
+    while (el.scrollHeight > el.clientHeight && tries < 8) {
+      base -= 1;
+      if (base < 12) break;
+      el.style.fontSize = base + 'px';
+      tries++;
+    }
+    // Если всё ещё не влезает, уменьшим межбуквенное расстояние
+    if (el.scrollHeight > el.clientHeight) {
+      el.style.letterSpacing = '0.6px';
+    }
+  });
+}
+
+document.getElementById('prevBtn').onclick = ()=>{
+
+  const centerIdx = getCenterIndex();
+
+  // не двигаемся, если уже на первой плашке
+
+  if(centerIdx === 0) return;
+
+  // чтобы активная всегда была в центре, мы двигаем currentIndex на -1
+
+  currentIndex = (currentIndex - 1 + panels.length) % panels.length;
+
+  updatePanels();
+
+};
+
+document.getElementById('nextBtn').onclick = ()=>{
+
+  const centerIdx = getCenterIndex();
+
+  // не двигаемся, если уже на последней плашке
+
+  if(centerIdx === panels.length - 1) return;
+
+  currentIndex = (currentIndex + 1) % panels.length;
+
+  updatePanels();
+
+};
+
+
+
+// также полезно: клик по панели — открыть плеер или центрировать
+
+topPanels.addEventListener('click', (e) => {
+  
+  const clicked = e.target.closest('.panel');
+  
+  if(!clicked) return;
+  
+  const globalIdx = parseInt(clicked.dataset.index||'1',10);
+  
+  if(!globalIdx) return;
+  
+  // Открываем плеер для глобального индекса (не зависит от фильтров)
+  window.location.href = `players/player.html?index=${globalIdx}`;
+
+});
+
+
+
+updatePanels();
+
+
+
+// реагируем на изменение размера — обновляем visibleCount и перестраиваем отображение
+
+window.addEventListener('resize', ()=>{
+
+  const oldVisible = visibleCount;
+
+  const newVisible = getVisibleCount();
+
+  if(oldVisible !== newVisible){
+
+    // при смене количества видимых элементов корректируем currentIndex так, чтобы визуально не было "скачка"
+
+    // (сохраняем центр на том же элементе, если можно)
+
+    const centerOffsetOld = Math.floor(oldVisible / 2);
+
+    const centerIndex = (currentIndex + centerOffsetOld + panels.length) % panels.length;
+
+    const centerOffsetNew = Math.floor(newVisible / 2);
+
+    currentIndex = (centerIndex - centerOffsetNew + panels.length) % panels.length;
+
+  }
+
+  updatePanels();
+  fitTitles();
+
+});
+
+
+
+// ===== регистрация / вход =====
+
+function toggleEye(inputId,iconId){
+
+  const input=document.getElementById(inputId);
+
+  const icon=document.getElementById(iconId);
+
+  icon.addEventListener('click',()=>{
+
+    if(input.type==='password'){input.type='text';icon.style.backgroundImage="url('icons/eye-open.png')";}
+
+    else{input.type='password';icon.style.backgroundImage="url('icons/eye-closed.png')";}
+
+  });
+
+}
+
+toggleEye('login_password','login_eye');
+
+toggleEye('reg_password','reg_eye1');
+
+toggleEye('reg_repeat','reg_eye2');
+
+
+
+function loadUsers(){return JSON.parse(localStorage.getItem('users')||'[]');}
+
+function saveUsers(u){localStorage.setItem('users',JSON.stringify(u));}
+
+function setCurrentUser(u){localStorage.setItem('user',JSON.stringify(u));}
+
+function getCurrentUser(){return JSON.parse(localStorage.getItem('user')||'null');}
+
+
+
+const regForm=document.getElementById('registerForm');
+
+const loginForm=document.getElementById('loginForm');
+
+const regError=document.getElementById('regError');
+
+const loginError=document.getElementById('loginError');
+
+const avatarBtn=document.getElementById('avatarBtn');
+
+const registerBtn=document.getElementById('registerBtn');
+
+const authModal=document.getElementById('authModal');
+
+const tabLogin=document.getElementById('tabLogin');
+
+const tabRegister=document.getElementById('tabRegister');
+
+const profilePanel=document.getElementById('profilePanel');
+
+const profileAvatar=document.getElementById('profileAvatar');
+
+const profileName=document.getElementById('profileName');
+
+const logoutBtn=document.getElementById('logoutBtn');
+
+
+
+function showModal(tab){
+
+  authModal.classList.add('visible');
+
+  if(tab==='register'){
+
+    tabRegister.classList.add('active');tabLogin.classList.remove('active');
+
+    loginForm.style.display='none';regForm.style.display='block';
+
+  }else{
+
+    tabLogin.classList.add('active');tabRegister.classList.remove('active');
+
+    regForm.style.display='none';loginForm.style.display='block';
+
+  }
+
+}
+
+tabLogin.onclick=()=>showModal('login');
+
+tabRegister.onclick=()=>showModal('register');
+
+registerBtn.onclick=()=>showModal('login');
+
+document.addEventListener('click',e=>{
+
+  if(authModal.classList.contains('visible')&&!authModal.contains(e.target)&&!registerBtn.contains(e.target)){
+
+    authModal.classList.remove('visible');
+
+  }
+
+});
+
+
+
+regForm.addEventListener('submit',e=>{
+
+  e.preventDefault();
+
+  const username=document.getElementById('reg_username').value.trim();
+
+  const pass=document.getElementById('reg_password').value;
+
+  const rep=document.getElementById('reg_repeat').value;
+
+  if(username.length<3){regError.textContent='Ник минимум 3 символа';regError.style.display='block';return;}
+
+  if(pass.length<6){regError.textContent='Пароль минимум 6 символов';regError.style.display='block';return;}
+
+  if(pass!==rep){regError.textContent='Пароли не совпадают';regError.style.display='block';return;}
+
+  const users=loadUsers();
+
+  if(users.find(u=>u.name.toLowerCase()===username.toLowerCase())){
+
+    regError.textContent='Ник уже занят';regError.style.display='block';return;
+
+  }
+
+  users.push({name:username,pass:pass,avatar:'img/default-avatar.png'});
+
+  saveUsers(users);
+
+  setCurrentUser({name:username,avatar:'img/default-avatar.png'});
+
+  location.reload();
+
+});
+
+
+
+loginForm.addEventListener('submit',e=>{
+
+  e.preventDefault();
+
+  const username=document.getElementById('login_username').value.trim();
+
+  const password=document.getElementById('login_password').value;
+
+  const users=loadUsers();
+
+
+
+  const user=users.find(u=>u.name.toLowerCase()===username.toLowerCase()&&u.pass===password);
+
+
+
+  if(!user){
+
+    loginError.textContent='Неверный логин или пароль';
+
+    loginError.style.display='block';
+
+    return;
+
+  }
+
+  setCurrentUser(user);
+
+  location.reload();
+
+});
+
+
+
+// ===== загрузка пользователя =====
+
+function updateUI(){
+
+  const user=getCurrentUser();
+
+  if(user){
+
+    registerBtn.style.display='none';
+
+    avatarBtn.style.display='block';
+
+    avatarBtn.style.backgroundImage=`url('${user.avatar}')`;
+
+    profileName.textContent=user.name;
+
+    profileAvatar.style.backgroundImage=`url('${user.avatar}')`;
+
+  }else{
+
+    registerBtn.style.display='block';
+
+    avatarBtn.style.display='none';
+
+  }
+
+}
+
+updateUI();
+
+
+
+// ===== панель профиля =====
+
+avatarBtn.addEventListener('click',()=>{
+
+  profilePanel.classList.toggle('visible');
+
+});
+
+logoutBtn.addEventListener('click',()=>{
+
+  localStorage.removeItem('user');
+
+  location.reload();
+
+});
+
+
+
+// ===== поиск =====
+
+const searchBtn = document.getElementById('searchBtn');
+
+const searchInput = document.getElementById('searchInput');
+
+
+
+// Функция фильтрации плашек по названию
+
+function filterPanels(searchText){
+
+  const searchLower = searchText.toLowerCase().trim();
+
+  
+
+  if(searchLower === ''){
+
+    // Если поле пустое - показываем все плашки и восстанавливаем нормальное отображение
+
+    updatePanels();
+
+    return;
+
+  }
+
+  
+
+  // Скрываем все плашки
+
+  panels.forEach(p=>{ 
+
+    p.style.display='none'; 
+
+    clearPanelStyle(p); 
+
+    p.classList.remove('active'); 
+
+  });
+
+  
+
+  // Находим плашки, которые соответствуют поисковому запросу
+
+  const matchingPanels = [];
+
+  panels.forEach((p, index)=>{
+
+    const panelTitle = p.dataset.title || '';
+
+    if(panelTitle.toLowerCase().includes(searchLower)){
+
+      matchingPanels.push({panel: p, index: index});
+
+    }
+
+  });
+
+  
+
+  // Показываем только найденные плашки
+
+  if(matchingPanels.length > 0){
+
+    matchingPanels.forEach((item, i)=>{
+
+      item.panel.style.display = 'block';
+
+      // Делаем первую найденную плашку активной
+
+      if(i === 0){
+
+        item.panel.classList.add('active');
+
+        const col = item.panel.dataset.color;
+
+        if(col){
+
+          item.panel.style.boxShadow = `0 0 30px ${col}, 0 0 60px ${col}33`;
+
+          const titleEl = item.panel.querySelector('.panel-title');
+
+          if(titleEl){
+
+            titleEl.style.color = col;
+
+            titleEl.style.textShadow = `0 0 8px ${col}, 0 0 18px ${col}`;
+
+          }
+
+        } else {
+
+          item.panel.style.boxShadow = '0 0 25px rgba(255,140,0,0.8)';
+
+        }
+
+      }
+
+    });
+
+    
+
+    // Обновляем счетчик
+
+    const firstMatchIndex = matchingPanels[0].index;
+
+    const counter = document.getElementById('counter');
+
+    counter.textContent = `${firstMatchIndex + 1}/${panels.length}`;
+
+  } else {
+
+    // Если ничего не найдено - обновляем счетчик
+
+    const counter = document.getElementById('counter');
+
+    counter.textContent = `0/${panels.length}`;
+
+  }
+
+}
+
+
+
+searchBtn.addEventListener('click', ()=>{
+
+  searchInput.classList.toggle('visible');
+
+  if(searchInput.classList.contains('visible')){
+
+    setTimeout(()=>{
+
+      searchInput.focus();
+
+    }, 100);
+
+  } else {
+
+    searchInput.value = '';
+
+    filterPanels(''); // Восстанавливаем все плашки
+
+  }
+
+});
+
+
+
+// Обработчик ввода текста в поле поиска
+
+searchInput.addEventListener('input', (e)=>{
+
+  filterPanels(e.target.value);
+
+});
+
+
+
+// Закрытие поиска при клике вне поля
+
+document.addEventListener('click', (e)=>{
+
+  if(!searchInput.contains(e.target) && !searchBtn.contains(e.target)){
+
+    searchInput.classList.remove('visible');
+
+    searchInput.value = '';
+
+    filterPanels(''); // Восстанавливаем все плашки
+
+  }
+
+});
+
+
+
+// ===== блокировка копирования =====
+
+// Блокировка контекстного меню
+
+document.addEventListener('contextmenu', function(e) {
+
+  e.preventDefault();
+
+  return false;
+
+});
+
+
+
+// Блокировка горячих клавиш копирования
+
+document.addEventListener('keydown', function(e) {
+
+  // Ctrl+C, Ctrl+A, Ctrl+V, Ctrl+X, Ctrl+S, F12
+
+  if((e.ctrlKey && (e.key === 'c' || e.key === 'C' || e.key === 'v' || e.key === 'V' || e.key === 'x' || e.key === 'X' || e.key === 'a' || e.key === 'A' || e.key === 's' || e.key === 'S')) || 
+
+     e.key === 'F12' || 
+
+     (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+
+     (e.ctrlKey && e.key === 'U' || e.ctrlKey && e.key === 'u')) {
+
+    e.preventDefault();
+
+    return false;
+
+  }
+
+});
+
+
+
+// Блокировка выделения текста через мышь
+
+document.addEventListener('selectstart', function(e) {
+
+  e.preventDefault();
+
+  return false;
+
+});
+
+
+
+// Блокировка перетаскивания изображений
+
+document.addEventListener('dragstart', function(e) {
+
+  e.preventDefault();
+
+  return false;
+
+});
+
+
+
+// Блокировка копирования через буфер обмена
+
+document.addEventListener('copy', function(e) {
+
+  e.clipboardData.setData('text/plain', '');
+
+  e.preventDefault();
+
+  return false;
+
+});
+
+</script>
+
+<!-- Нижняя широкая полоса с Telegram -->
+<div class="bottom-bar">
+  <a class="bottom-btn" href="https://t.me/DAWRT223" target="_blank" rel="noopener noreferrer">
+    <img src="icons/telegram.png" alt="Telegram" />
+  </a>
+  
+</div>
+
+</body>
+
+</html>
